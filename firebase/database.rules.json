@@ -1,13 +1,180 @@
 {
- "rules": {
-  ".read": false,
-  ".write": false,
-  "admins": { "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": false } },
-  "office": {
-   ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
-   ".write": "auth != null && root.child('admins').child(auth.uid).val() === true && newData.exists()",
-   "items": { "$id": { ".validate": "newData.hasChildren(['name','unit','qty','active'])", "qty": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 === 0" } } },
-   "movements": { "$id": { ".validate": "newData.hasChildren(['id','kind','by','byEmail','ts','date','lines']) && newData.child('id').val() === $id && (newData.child('kind').val() === 'receipt' || newData.child('kind').val() === 'withdrawal' || newData.child('kind').val() === 'adjustment') && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now))" } }
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "admins": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": false
+      }
+    },
+    "office": {
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('admins').child(auth.uid).child('sanpatong').val() === true)",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('admins').child(auth.uid).child('sanpatong').val() === true) && newData.exists()",
+      "items": {
+        "$id": {
+          ".validate": "newData.hasChildren(['name','unit','qty','active'])",
+          "qty": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 === 0"
+          }
+        }
+      },
+      "movements": {
+        "$id": {
+          ".validate": "newData.hasChildren(['id','kind','by','byEmail','ts','date','lines']) && newData.child('id').val() === $id && (newData.child('kind').val() === 'receipt' || newData.child('kind').val() === 'withdrawal' || newData.child('kind').val() === 'adjustment') && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now))"
+        }
+      },
+      "catalog": {
+        ".read": "auth != null && root.child('office/requestEnabled').val() === true"
+      },
+      "requests": {
+        "$owner": {
+          ".read": "auth != null && auth.uid === $owner",
+          "$rid": {
+            ".write": "auth != null && auth.uid === $owner && !data.exists() && newData.exists() && root.child('office/requestEnabled').val() === true",
+            ".validate": "newData.hasChildren(['id','owner','officeId','empId','fullName','note','lines','photo','status','ts']) && newData.child('id').val() === $rid && newData.child('owner').val() === $owner && newData.child('officeId').val() === 'sanpatong' && (data.exists() || (newData.child('status').val() === 'pending' && newData.child('ts').val() === now))",
+            "id": {
+              ".validate": "newData.isString() && newData.val().length <= 80"
+            },
+            "owner": {
+              ".validate": "newData.isString()"
+            },
+            "officeId": {
+              ".validate": "newData.val() === 'sanpatong'"
+            },
+            "empId": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+            },
+            "fullName": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+            },
+            "note": {
+              ".validate": "newData.isString() && newData.val().length <= 300"
+            },
+            "photo": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 280000 && newData.val().beginsWith('data:image/jpeg;base64,')"
+            },
+            "status": {
+              ".validate": "newData.val() === 'pending' || newData.val() === 'approved' || newData.val() === 'rejected'"
+            },
+            "ts": {
+              ".validate": "newData.isNumber()"
+            },
+            "processedAt": {
+              ".validate": "newData.isNumber()"
+            },
+            "processedBy": {
+              ".validate": "newData.isString()"
+            },
+            "reason": {
+              ".validate": "newData.isString() && newData.val().length <= 500"
+            },
+            "lines": {
+              ".validate": "newData.hasChild('0')",
+              "$line": {
+                ".validate": "$line.matches(/^(0|[1-9]|1[0-9])$/) && newData.hasChildren(['itemId','qty'])",
+                "itemId": {
+                  ".validate": "newData.isString() && root.child('office/items').child(newData.val()).child('active').val() === true"
+                },
+                "qty": {
+                  ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 999 && newData.val() % 1 === 0"
+                },
+                "$other": {
+                  ".validate": false
+                }
+              }
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
+      }
+    },
+    "offices": {
+      "maewang": {
+        ".read": "auth != null && root.child('admins').child(auth.uid).child('maewang').val() === true",
+        ".write": "auth != null && root.child('admins').child(auth.uid).child('maewang').val() === true && newData.exists()",
+        "items": {
+          "$id": {
+            ".validate": "newData.hasChildren(['name','unit','qty','active'])",
+            "qty": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 === 0"
+            }
+          }
+        },
+        "movements": {
+          "$id": {
+            ".validate": "newData.hasChildren(['id','kind','by','byEmail','ts','date','lines']) && newData.child('id').val() === $id && (newData.child('kind').val() === 'receipt' || newData.child('kind').val() === 'withdrawal' || newData.child('kind').val() === 'adjustment') && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now))"
+          }
+        },
+        "catalog": {
+          ".read": "auth != null && root.child('offices/maewang/requestEnabled').val() === true"
+        },
+        "requests": {
+          "$owner": {
+            ".read": "auth != null && auth.uid === $owner",
+            "$rid": {
+              ".write": "auth != null && auth.uid === $owner && !data.exists() && newData.exists() && root.child('offices/maewang/requestEnabled').val() === true",
+              ".validate": "newData.hasChildren(['id','owner','officeId','empId','fullName','note','lines','photo','status','ts']) && newData.child('id').val() === $rid && newData.child('owner').val() === $owner && newData.child('officeId').val() === 'maewang' && (data.exists() || (newData.child('status').val() === 'pending' && newData.child('ts').val() === now))",
+              "id": {
+                ".validate": "newData.isString() && newData.val().length <= 80"
+              },
+              "owner": {
+                ".validate": "newData.isString()"
+              },
+              "officeId": {
+                ".validate": "newData.val() === 'maewang'"
+              },
+              "empId": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+              },
+              "fullName": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+              },
+              "note": {
+                ".validate": "newData.isString() && newData.val().length <= 300"
+              },
+              "photo": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 280000 && newData.val().beginsWith('data:image/jpeg;base64,')"
+              },
+              "status": {
+                ".validate": "newData.val() === 'pending' || newData.val() === 'approved' || newData.val() === 'rejected'"
+              },
+              "ts": {
+                ".validate": "newData.isNumber()"
+              },
+              "processedAt": {
+                ".validate": "newData.isNumber()"
+              },
+              "processedBy": {
+                ".validate": "newData.isString()"
+              },
+              "reason": {
+                ".validate": "newData.isString() && newData.val().length <= 500"
+              },
+              "lines": {
+                ".validate": "newData.hasChild('0')",
+                "$line": {
+                  ".validate": "$line.matches(/^(0|[1-9]|1[0-9])$/) && newData.hasChildren(['itemId','qty'])",
+                  "itemId": {
+                    ".validate": "newData.isString() && root.child('offices/maewang/items').child(newData.val()).child('active').val() === true"
+                  },
+                  "qty": {
+                    ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 999 && newData.val() % 1 === 0"
+                  },
+                  "$other": {
+                    ".validate": false
+                  }
+                }
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          }
+        }
+      }
+    }
   }
- }
 }
