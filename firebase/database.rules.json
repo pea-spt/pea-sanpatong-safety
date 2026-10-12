@@ -33,8 +33,8 @@
         "$owner": {
           ".read": "auth != null && auth.uid === $owner",
           "$rid": {
-            ".write": "auth != null && auth.uid === $owner && !data.exists() && newData.exists() && root.child('office/requestEnabled').val() === true",
-            ".validate": "newData.hasChildren(['id','owner','officeId','empId','fullName','note','lines','photo','status','ts']) && newData.child('id').val() === $rid && newData.child('owner').val() === $owner && newData.child('officeId').val() === 'sanpatong' && (data.exists() || (newData.child('status').val() === 'pending' && newData.child('ts').val() === now))",
+            ".write": "auth != null && auth.uid === $owner && !data.exists() && newData.exists() && root.child('office/requestEnabled').val() === true && (!root.child('office/requests').child($owner).child('lastSubmittedAt').exists() || now - root.child('office/requests').child($owner).child('lastSubmittedAt').val() >= 60000)",
+            ".validate": "newData.hasChildren(['id','owner','officeId','empId','fullName','note','lines','photo','status','ts']) && newData.child('id').val() === $rid && newData.child('owner').val() === $owner && newData.child('officeId').val() === 'sanpatong' && (data.exists() || (newData.parent().child('lastSubmittedAt').val() === now && newData.child('status').val() === 'pending' && newData.child('ts').val() === now))",
             "id": {
               ".validate": "newData.isString() && newData.val().length <= 80"
             },
@@ -89,6 +89,10 @@
             "$other": {
               ".validate": false
             }
+          },
+          "lastSubmittedAt": {
+            ".write": "auth != null && auth.uid === $owner && (!data.exists() || now - data.val() >= 60000)",
+            ".validate": "newData.isNumber() && (newData.val() === now || (data.exists() && newData.val() === data.val()))"
           }
         }
       }
@@ -117,8 +121,8 @@
           "$owner": {
             ".read": "auth != null && auth.uid === $owner",
             "$rid": {
-              ".write": "auth != null && auth.uid === $owner && !data.exists() && newData.exists() && root.child('offices/maewang/requestEnabled').val() === true",
-              ".validate": "newData.hasChildren(['id','owner','officeId','empId','fullName','note','lines','photo','status','ts']) && newData.child('id').val() === $rid && newData.child('owner').val() === $owner && newData.child('officeId').val() === 'maewang' && (data.exists() || (newData.child('status').val() === 'pending' && newData.child('ts').val() === now))",
+              ".write": "auth != null && auth.uid === $owner && !data.exists() && newData.exists() && root.child('offices/maewang/requestEnabled').val() === true && (!root.child('offices/maewang/requests').child($owner).child('lastSubmittedAt').exists() || now - root.child('offices/maewang/requests').child($owner).child('lastSubmittedAt').val() >= 60000)",
+              ".validate": "newData.hasChildren(['id','owner','officeId','empId','fullName','note','lines','photo','status','ts']) && newData.child('id').val() === $rid && newData.child('owner').val() === $owner && newData.child('officeId').val() === 'maewang' && (data.exists() || (newData.parent().child('lastSubmittedAt').val() === now && newData.child('status').val() === 'pending' && newData.child('ts').val() === now))",
               "id": {
                 ".validate": "newData.isString() && newData.val().length <= 80"
               },
@@ -173,6 +177,10 @@
               "$other": {
                 ".validate": false
               }
+            },
+            "lastSubmittedAt": {
+              ".write": "auth != null && auth.uid === $owner && (!data.exists() || now - data.val() >= 60000)",
+              ".validate": "newData.isNumber() && (newData.val() === now || (data.exists() && newData.val() === data.val()))"
             }
           }
         }
@@ -202,8 +210,8 @@
           "$owner": {
             ".read": "auth != null && auth.uid === $owner",
             "$rid": {
-              ".write": "auth != null && auth.uid === $owner && !data.exists() && newData.exists() && root.child('qa/office/requestEnabled').val() === true",
-              ".validate": "newData.hasChildren(['id','owner','officeId','empId','fullName','note','lines','photo','status','ts']) && newData.child('id').val() === $rid && newData.child('owner').val() === $owner && newData.child('officeId').val() === 'sanpatong' && (data.exists() || (newData.child('status').val() === 'pending' && newData.child('ts').val() === now))",
+              ".write": "auth != null && auth.uid === $owner && !data.exists() && newData.exists() && root.child('qa/office/requestEnabled').val() === true && (!root.child('qa/office/requests').child($owner).child('lastSubmittedAt').exists() || now - root.child('qa/office/requests').child($owner).child('lastSubmittedAt').val() >= 60000)",
+              ".validate": "newData.hasChildren(['id','owner','officeId','empId','fullName','note','lines','photo','status','ts']) && newData.child('id').val() === $rid && newData.child('owner').val() === $owner && newData.child('officeId').val() === 'sanpatong' && (data.exists() || (newData.parent().child('lastSubmittedAt').val() === now && newData.child('status').val() === 'pending' && newData.child('ts').val() === now))",
               "id": {
                 ".validate": "newData.isString() && newData.val().length <= 80"
               },
@@ -258,6 +266,10 @@
               "$other": {
                 ".validate": false
               }
+            },
+            "lastSubmittedAt": {
+              ".write": "auth != null && auth.uid === $owner && (!data.exists() || now - data.val() >= 60000)",
+              ".validate": "newData.isNumber() && (newData.val() === now || (data.exists() && newData.val() === data.val()))"
             }
           }
         }
@@ -286,8 +298,8 @@
             "$owner": {
               ".read": "auth != null && auth.uid === $owner",
               "$rid": {
-                ".write": "auth != null && auth.uid === $owner && !data.exists() && newData.exists() && root.child('qa/offices/maewang/requestEnabled').val() === true",
-                ".validate": "newData.hasChildren(['id','owner','officeId','empId','fullName','note','lines','photo','status','ts']) && newData.child('id').val() === $rid && newData.child('owner').val() === $owner && newData.child('officeId').val() === 'maewang' && (data.exists() || (newData.child('status').val() === 'pending' && newData.child('ts').val() === now))",
+                ".write": "auth != null && auth.uid === $owner && !data.exists() && newData.exists() && root.child('qa/offices/maewang/requestEnabled').val() === true && (!root.child('qa/offices/maewang/requests').child($owner).child('lastSubmittedAt').exists() || now - root.child('qa/offices/maewang/requests').child($owner).child('lastSubmittedAt').val() >= 60000)",
+                ".validate": "newData.hasChildren(['id','owner','officeId','empId','fullName','note','lines','photo','status','ts']) && newData.child('id').val() === $rid && newData.child('owner').val() === $owner && newData.child('officeId').val() === 'maewang' && (data.exists() || (newData.parent().child('lastSubmittedAt').val() === now && newData.child('status').val() === 'pending' && newData.child('ts').val() === now))",
                 "id": {
                   ".validate": "newData.isString() && newData.val().length <= 80"
                 },
@@ -342,6 +354,10 @@
                 "$other": {
                   ".validate": false
                 }
+              },
+              "lastSubmittedAt": {
+                ".write": "auth != null && auth.uid === $owner && (!data.exists() || now - data.val() >= 60000)",
+                ".validate": "newData.isNumber() && (newData.val() === now || (data.exists() && newData.val() === data.val()))"
               }
             }
           }
