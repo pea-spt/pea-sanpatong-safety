@@ -9,3 +9,6 @@ export const firebaseConfig = {
   messagingSenderId: '350771483466',
   appId: '1:350771483466:web:916a844f561218e2c6a7b3'
 };
+
+// Public site key จำกัดโดเมน pea-spt.github.io ไม่ใช่ secret key
+export const appCheckSiteKey = "6LejoOstAAAAAGi2ODNkO8GFWqJ6itDvXBtZ_COE";
