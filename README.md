@@ -1,10 +1,10 @@
 # PEA Sanpatong Safety
 
-เว็บเริ่มต้นสำหรับ GitHub Pages ไม่มีข้อมูลหรือการเชื่อมต่อของลำพูน ใช้ HTML/CSS/JavaScript modules ไม่ต้อง build ไม่มี dependency ติดตั้งในเครื่องเพื่อเปิดใช้งานหน้าเว็บ
+ระบบสองหน่วยงาน สันป่าตองและแม่วาง สำหรับ GitHub Pages ไม่มีข้อมูลหรือการเชื่อมต่อของลำพูน ใช้ HTML/CSS/JavaScript modules ไม่ต้อง build ไม่มี dependency ติดตั้งในเครื่องเพื่อเปิดใช้งานหน้าเว็บ
 
 ## เปิดระบบ
 
-อ่าน [คู่มือตั้งค่า](SETUP.html) สร้าง Firebase project ใหม่ เปิด Email/Password สร้างบัญชีแอดมิน เปิด Realtime Database แบบ Locked mode และ deploy `firebase/database.rules.json` จากนั้นเพิ่ม `/admins/{uid}=true` (boolean) ผ่าน Firebase Console
+อ่าน [คู่มือตั้งค่า](SETUP.html) project ปัจจุบันคือ `ppe-sanpatong` และมี Web config แล้ว ห้ามสร้าง project ซ้ำ หากติดตั้งระบบแยกให้สร้าง project ของตนเอง เปิด Email/Password สร้างบัญชีแอดมิน เปิด Realtime Database แบบ Locked mode และ deploy `firebase/database.rules.json` จากนั้นเพิ่ม `/admins/{uid}=true` (boolean) ผ่าน Firebase Console
 
 ใส่ Web config ใน `config.js` แทน null เพื่อใช้ร่วมทุกเครื่อง หรือกรอก JSON ในหน้าตั้งค่าเพื่อใช้เฉพาะเบราว์เซอร์นั้น ไม่มีบัญชีรหัสผ่านเริ่มต้น ห้ามใส่ password, service account key, GitHub token ใน repo
 
@@ -24,7 +24,7 @@
 
 ## ข้อจำกัดรุ่นแรก
 
-ยังไม่เปิดหน้า QR สาธารณะ ไม่อัปโหลดไฟล์เอง ใช้ลิงก์ HTTPS หลักฐานที่หน่วยงานกำหนดสิทธิ์ไว้ ยังไม่มี role viewer/storekeeper แยก, แก้ข้อมูลรายคน, แก้ catalog, ยกเลิกเอกสารหรือ restore ผ่านเว็บ ผู้จ่ายใช้บัญชีแอดมินเท่านั้น รายการผิดแก้ด้วย adjustment มีเหตุผล ไม่ลบประวัติจาก UI
+มีหน้า QR ส่งคำขอพร้อมภาพ และแก้บุคลากร/อุปกรณ์ได้โดยคง IDs เดิม หน่วยนับที่มีประวัติแล้วเปลี่ยนไม่ได้ หน้าเจ้าหน้าที่รับเข้า/เบิกใช้ลิงก์ HTTPS เป็นหลักฐาน ยังไม่มี role viewer/storekeeper แยก ยกเลิกเอกสารหรือ restore ผ่านเว็บ ผู้จ่ายใช้บัญชีแอดมินเท่านั้น รายการผิดแก้ด้วย adjustment มีเหตุผล ไม่ลบประวัติจาก UI
 
 Realtime Database transaction อ่าน/เขียน `/office` ทั้งก้อน เหมาะระบบเริ่มต้นคลังเดียว ต้องวางแผนย้าย server-side transaction เมื่อข้อมูลมากขึ้น Rules จำกัดสมาชิก admins ซึ่งเป็นผู้มีสิทธิ์เต็ม ไม่ใช่ระบบ immutable audit ที่กันแอดมินดัดแปลงข้อมูลเองได้ ห้ามใช้จำนวนผลต่างเป็นหลักฐานว่าของหายเสมอ
 
@@ -32,7 +32,7 @@ Realtime Database transaction อ่าน/เขียน `/office` ทั้�
 
 ## ตรวจโค้ด
 
-ใช้ Node.js แล้วรัน `npm test` และ `npm run check` ทดสอบ domain สำหรับ partial failure, insufficient stock, repeated request และ CSV ไม่มี production Firebase config ใน repo จึงยังไม่สามารถตรวจ end-to-end login/rules/network จริงได้
+ใช้ Node.js แล้วรัน `npm test` และ `npm run check` ทดสอบ domain สำหรับ partial failure, insufficient stock, repeated request และ CSV มี public Web config และ App Check site key ใน repo การทดสอบ Node ไม่ครอบคลุม Firebase Rules หรือเครือข่ายจริง ต้องตรวจผ่านเว็บและบัญชีจริงด้วย
 
 ## ทำงานต่อบนเว็บ
 
@@ -53,7 +53,7 @@ Realtime Database transaction อ่าน/เขียน `/office` ทั้�
 - แอดมินตรวจรูปและรหัสกับทะเบียน แล้วอนุมัติใน transaction เดียว: ตัดคลัง + ประวัติ + สถานะ approved + catalog อัปเดตพร้อมกัน หากของไม่พอทั้งใบไม่เปลี่ยน
 - ไม่อนุมัติใส่เหตุผล ยอดคลังไม่เปลี่ยน
 - หลักฐานภาพอยู่กับคำขอใน Realtime Database ไม่ส่งไป Drive ลำพูนหรือบริการอื่น จึงต้องคำนึงถึงพื้นที่และปริมาณดาวน์โหลดโดยเฉพาะเมื่อมีคำขอจำนวนมาก
-- ยังไม่มี App Check/ระบบจำกัดจำนวนคำขอจากอุปกรณ์ ควรเปิด App Check ก่อนแจก QR ในวงกว้าง ไม่อ้างว่าผู้กรอกชื่อคือเจ้าของรหัส ผู้ดูแลต้องตรวจตัวผู้เบิกก่อนจ่าย
+- มี App Check แบบ reCAPTCHA Enterprise และ Rules เว้นคำขอ 60 วินาทีต่อ anonymous UID ตรวจ Console วันที่ 12 ตุลาคม 2569: Realtime Database Enforced, Authentication Unenforced การเปลี่ยน UID ยังไม่ใช่การจำกัดต่อคนหรือต่ออุปกรณ์แบบถาวร ไม่อ้างว่าผู้กรอกชื่อคือเจ้าของรหัส ผู้ดูแลต้องตรวจตัวผู้เบิกก่อนจ่าย
 - เมนูคำขอเบิกแสดง QR จากลิงก์ของหน่วยงาน ใช้ไลบรารี QRCode.js โหลดผ่าน CDN หาก CDN ถูกบล็อกยังใช้ลิงก์ได้
 
 ต้องทดสอบ Rules กับผู้ส่งจริงก่อนใช้เบิกจ่ายจริง: คำขอสำเร็จ อ่านผู้อื่นไม่ได้ เขียนคลังไม่ได้ อนุมัติและเปิดกลับมายอด/สถานะ/ประวัติตรงกัน
@@ -65,3 +65,12 @@ Realtime Database transaction อ่าน/เขียน `/office` ทั้�
 ตัวกรอง: หน่วยงาน อุปกรณ์ รหัส/ชื่อผู้เบิก และช่วงวันที่ รวมผู้เบิกไม่ซ้ำและใบเบิกไม่ซ้ำ กราฟหน่วยงาน หมวดอุปกรณ์ รายการ 10 อันดับ และแนวโน้มเดือนเปลี่ยนตามตัวกรองเดียวกับตาราง แยกจำนวนตามหน่วยนับ ไม่บวกรองเท้าคู่กับหมวกใบเป็นยอดเดียว โหมดประชุมซ่อนรหัสและชื่อในตารางและ CSV; PDF ใช้ระบบพิมพ์ของเบราว์เซอร์ สถานะคำขอรออนุมัติแยกจากยอดจ่ายจริง ไม่รวมแม่วางที่ยังไม่เปิดหรือไม่มีสิทธิ์
 
 บัญชี Firebase ใช้ app name คงที่เพื่อคง session หลัง reload ในแท็บเดิม ไม่บันทึกรหัสผ่านเอง
+
+## การดูแลระบบและสถานะล่าสุด
+
+- Repository: https://github.com/pea-spt/pea-sanpatong-safety
+- เว็บ: https://pea-spt.github.io/pea-sanpatong-safety/
+- อ่าน [คู่มือสำรอง/กู้คืน](OPERATIONS.md) และ [ผลตรวจรับ](READINESS.md) ก่อนเปิดใช้จริง
+- [ตรวจไฟล์สำรอง](backup-check.html) ตรวจในเครื่อง ไม่อัปโหลดหรือเขียนฐานข้อมูล รองรับไฟล์สำรองทุกหน่วยงาน version 1
+- การแก้รายละเอียดบุคลากรไม่เปลี่ยนรหัสประจำตัวหรือประวัติเดิม การแก้อุปกรณ์รักษายอดล่าสุด ปิด SKU ที่ยังมีของหรือคำขอ pending ไม่ได้
+- ใช้ qa-check.html ตรวจสิทธิ์ anonymous ทั้งสองแห่ง เมื่อเปิด catalog QA แล้ว ผล Node tests ไม่ใช่หลักฐานว่าผ่าน live Rules
