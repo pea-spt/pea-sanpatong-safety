@@ -74,7 +74,7 @@
               "$line": {
                 ".validate": "$line.matches(/^(0|[1-9]|1[0-9])$/) && newData.hasChildren(['itemId','qty'])",
                 "itemId": {
-                  ".validate": "newData.isString() && root.child('office/items').child(newData.val()).child('active').val() === true"
+                  ".validate": "newData.isString() && (data.exists() || root.child('office/items').child(newData.val()).child('active').val() === true)"
                 },
                 "qty": {
                   ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 999 && newData.val() % 1 === 0"
@@ -158,7 +158,7 @@
                 "$line": {
                   ".validate": "$line.matches(/^(0|[1-9]|1[0-9])$/) && newData.hasChildren(['itemId','qty'])",
                   "itemId": {
-                    ".validate": "newData.isString() && root.child('offices/maewang/items').child(newData.val()).child('active').val() === true"
+                    ".validate": "newData.isString() && (data.exists() || root.child('offices/maewang/items').child(newData.val()).child('active').val() === true)"
                   },
                   "qty": {
                     ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 999 && newData.val() % 1 === 0"
