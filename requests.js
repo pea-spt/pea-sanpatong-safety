@@ -1,5 +1,6 @@
 import {applyMovement,emptyOffice} from './domain.js';
-export const offices=[{id:'sanpatong',name:'กฟส.สันป่าตอง',path:'office'},{id:'maewang',name:'กฟส.แม่วาง',path:'offices/maewang'}];
+export const isQA=typeof location!=='undefined'&&new URL(location.href).searchParams.get('environment')==='qa';
+export const offices=[{id:'sanpatong',name:'กฟส.สันป่าตอง',path:'office'},{id:'maewang',name:'กฟส.แม่วาง',path:'offices/maewang'}].map(o=>({...o,path:(isQA?'qa/':'')+o.path}));
 export function approveRequest(current,owner,id,actor,ts,date){
  const s=structuredClone(current||emptyOffice()),r=s.requests?.[owner]?.[id];
  if(!r)throw Error('ไม่พบคำขอ');
