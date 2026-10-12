@@ -1,6 +1,6 @@
 # Project guidance
 
-Build PPE management for San Pa Tong, hosted on GitHub Pages with Firebase services. Start with empty business data. Never copy Lamphun credentials, source, personnel, stock, photos, database URLs or upload tokens into this repository. Research files outside this folder are not deployment assets.
+Build PEA Sanpatong Safety for San Pa Tong, hosted on GitHub Pages with Firebase services. Start with empty business data. Never copy Lamphun credentials, source, personnel, stock, photos, database URLs or upload tokens into this repository. Research files outside this folder are not deployment assets.
 
 Protect all business data with Firebase Authentication and Database Rules. No localStorage fake administrator, default password or public write rules. Firebase public web config is allowed; private keys and passwords are not.
 

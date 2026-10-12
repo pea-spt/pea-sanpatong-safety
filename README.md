@@ -1,4 +1,4 @@
-# PPE สันป่าตอง
+# PEA Sanpatong Safety
 
 เว็บเริ่มต้นสำหรับ GitHub Pages ไม่มีข้อมูลหรือการเชื่อมต่อของลำพูน ใช้ HTML/CSS/JavaScript modules ไม่ต้อง build ไม่มี dependency ติดตั้งในเครื่องเพื่อเปิดใช้งานหน้าเว็บ
 
@@ -10,7 +10,7 @@
 
 ## GitHub Pages
 
-ใช้ Settings → Pages → Deploy from a branch → main → /(root) หน้าเว็บใช้ relative paths จึงรองรับ project Pages ใต้ `/ppe-sanpatong/` โดยตรง หรือเผยแพร่ source ผ่าน workflow ที่เหมาะกับหน่วยงาน
+ใช้ Settings → Pages → Deploy from a branch → main → /(root) หน้าเว็บใช้ relative paths จึงรองรับ project Pages ใต้ `/pea-sanpatong-safety/` โดยตรง หรือเผยแพร่ source ผ่าน workflow ที่เหมาะกับหน่วยงาน
 
 ## การทำงาน
 

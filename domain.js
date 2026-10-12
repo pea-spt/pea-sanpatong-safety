@@ -1,4 +1,4 @@
-export const emptyOffice=()=>({settings:{name:'การไฟฟ้าส่วนภูมิภาคสันป่าตอง',location:'',contact:''},people:{},items:{},movements:{}});
+export const emptyOffice=()=>({settings:{name:'PEA Sanpatong Safety',location:'',contact:''},people:{},items:{},movements:{}});
 export function positiveInteger(value){const n=Number(value);if(!Number.isSafeInteger(n)||n<=0)throw Error('จำนวนต้องเป็นจำนวนเต็มมากกว่า 0');return n;}
 export function applyMovement(current,record){
  record=structuredClone(record);
