@@ -1,3 +1,4 @@
+import {validatePersonStatus} from './person-status.js';
 import {driveUrl} from './drive-policy.js?v=20261013-drive100';
 import {reconcile} from './domain.js';
 import {receiptVersions} from './receipt-edit.js';
@@ -10,7 +11,7 @@ export function inspectBackup(value){
   if(!path||!object(entry)||entry.path!==(value.environment==='qa'?'qa/':'')+path||!object(entry.data))throw Error('เส้นทางหน่วยงานในไฟล์ไม่ถูกต้อง');
   const s=entry.data;
   for(const key of ['people','items','movements'])if(s[key]!==undefined&&!object(s[key]))throw Error('รูปแบบ '+key+' ไม่ถูกต้อง');
-  const ids=new Set();for(const p of Object.values(s.people||{})){if(!object(p)||typeof p.empId!=='string'||!p.empId.trim()||typeof p.fullName!=='string'||!p.fullName.trim()||typeof p.active!=='boolean'||ids.has(p.empId))throw Error('ทะเบียนมีข้อมูลผิดหรือรหัสซ้ำ');ids.add(p.empId);}
+  const ids=new Set();for(const p of Object.values(s.people||{})){if(!object(p)||typeof p.empId!=='string'||!p.empId.trim()||typeof p.fullName!=='string'||!p.fullName.trim()||typeof p.active!=='boolean'||ids.has(p.empId))throw Error('ทะเบียนมีข้อมูลผิดหรือรหัสซ้ำ');validatePersonStatus(p);ids.add(p.empId);}
   for(const x of Object.values(s.items||{}))if(!object(x)||typeof x.name!=='string'||!x.name.trim()||typeof x.unit!=='string'||!x.unit.trim()||!Number.isSafeInteger(x.qty)||x.qty<0||typeof x.active!=='boolean')throw Error('อุปกรณ์หรือยอดคงเหลือไม่ถูกต้อง');
   for(const [mid,m] of Object.entries(s.movements||{})){
    if(!object(m)||m.id!==mid||!['receipt','withdrawal','adjustment'].includes(m.kind)||!Array.isArray(m.lines)||!m.lines.length)throw Error('ประวัติรายการไม่ถูกต้อง');

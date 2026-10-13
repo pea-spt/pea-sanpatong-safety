@@ -1,3 +1,4 @@
+import {isCurrentPerson} from './person-status.js';
 export const emptyOffice=()=>({settings:{name:'PEA Sanpatong Safety',location:'',contact:''},people:{},items:{},movements:{}});
 export function positiveInteger(value){const n=Number(value);if(!Number.isSafeInteger(n)||n<=0)throw Error('จำนวนต้องเป็นจำนวนเต็มมากกว่า 0');return n;}
 export function applyMovement(current,record){
@@ -6,7 +7,7 @@ export function applyMovement(current,record){
  if(state.movements[record.id])return state;
  if(!['receipt','withdrawal','adjustment'].includes(record.kind))throw Error('ประเภทรายการไม่ถูกต้อง');
  if(!record.lines?.length)throw Error('กรุณาเพิ่มรายการ');
- if(record.kind==='withdrawal'&&!state.people?.[record.personId]?.active)throw Error('ผู้เบิกไม่อยู่ในทะเบียนที่ใช้งาน');
+ if(record.kind==='withdrawal'&&!isCurrentPerson(state.people?.[record.personId]||{}))throw Error('ผู้เบิกไม่อยู่ในทะเบียนที่ใช้งาน');
  if(record.kind==='adjustment'&&!record.note?.trim())throw Error('กรุณาระบุเหตุผลปรับยอด');
  const seen=new Set();
  for(const line of record.lines){
