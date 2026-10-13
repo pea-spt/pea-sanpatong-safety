@@ -4,6 +4,6 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.js",
-    "check": "node --check app.js && node --check domain.js && node --check requests.js && node --check public-request.js && node --check meeting.js && node --check qa-check.js && node --check app-check.js && node --check backup.js && node --check backup-check.js && node --check catalog-edit.js"
+    "check": "node --check app.js && node --check domain.js && node --check requests.js && node --check public-request.js && node --check meeting.js && node --check qa-check.js && node --check app-check.js && node --check backup.js && node --check backup-check.js && node --check catalog-edit.js && node --check item-search.js"
   }
 }
