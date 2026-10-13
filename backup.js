@@ -1,4 +1,5 @@
 import {reconcile} from './domain.js';
+import {receiptVersions} from './receipt-edit.js';
 const object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 export function inspectBackup(value){
  if(!object(value)||value.schemaVersion!==1||!['live','qa'].includes(value.environment)||!Number.isFinite(Date.parse(value.exportedAt))||!object(value.offices))throw Error('ใช้ไฟล์สำรองทุกหน่วยงานรูปแบบ version 1');
@@ -13,6 +14,18 @@ export function inspectBackup(value){
   for(const [mid,m] of Object.entries(s.movements||{})){
    if(!object(m)||m.id!==mid||!['receipt','withdrawal','adjustment'].includes(m.kind)||!Array.isArray(m.lines)||!m.lines.length)throw Error('ประวัติรายการไม่ถูกต้อง');
    const seen=new Set();for(const l of m.lines){if(!object(l)||!s.items?.[l.itemId]||seen.has(l.itemId)||!Number.isSafeInteger(l.delta)||l.delta===0||(m.kind==='receipt'&&l.delta<=0)||(m.kind==='withdrawal'&&l.delta>=0))throw Error('ประวัติอ้างอิงอุปกรณ์หรือจำนวนผิด');seen.add(l.itemId);}
+  }
+  if(s.receiptRevisions!==undefined&&!object(s.receiptRevisions))throw Error('รูปแบบประวัติแก้ใบรับเข้าไม่ถูกต้อง');
+  for(const [rid,r] of Object.entries(s.receiptRevisions||{})){
+   if(!object(r)||r.id!==rid||s.movements?.[r.receiptId]?.kind!=='receipt'||!Number.isSafeInteger(r.version)||r.version<1||!r.reason?.trim()||!object(r.before)||!object(r.after)||!Array.isArray(r.before.lines)||(r.after.lines!==undefined&&!Array.isArray(r.after.lines)))throw Error('ประวัติแก้ใบรับเข้าไม่ถูกต้อง');
+   for(const view of [r.before,r.after]){const seen=new Set(),lines=view.lines||[];if(!['active','cancelled'].includes(view.status)||(view.status==='active'&&!lines.length)||(view.status==='cancelled'&&lines.length))throw Error('สถานะใบรับเข้าไม่ถูกต้อง');for(const l of lines){if(!s.items?.[l.itemId]||seen.has(l.itemId)||!Number.isSafeInteger(l.qty)||l.qty<=0)throw Error('จำนวนในใบรับเข้าไม่ถูกต้อง');seen.add(l.itemId);}}
+   const versions=receiptVersions(s,r.receiptId);if(versions.filter(v=>v.version===r.version).length!==1||r.version>versions.length)throw Error('ลำดับแก้ใบรับเข้าไม่ครบ');
+   const prev=r.version===1?s.movements[r.receiptId]:versions.find(v=>v.version===r.version-1)?.after;
+   const quantities=lines=>Object.fromEntries(lines.map(l=>[l.itemId,l.qty??l.delta]));
+   if(JSON.stringify(quantities(r.before.lines))!==JSON.stringify(quantities(prev.lines)))throw Error('ใบรับเข้าก่อนแก้ไม่ตรงกับประวัติ');
+   const deltas={};for(const l of r.before.lines)deltas[l.itemId]=-l.qty;for(const l of r.after.lines||[])deltas[l.itemId]=(deltas[l.itemId]||0)+l.qty;
+   const expected=Object.entries(deltas).filter(([,n])=>n!==0).sort(),m=s.movements[rid];
+   if(expected.length&&(!m||m.kind!=='adjustment'||m.receiptId!==r.receiptId||JSON.stringify(m.lines.map(l=>[l.itemId,l.delta]).sort())!==JSON.stringify(expected)))throw Error('ยอดแก้ใบรับเข้าไม่ตรงกับส่วนต่าง');
   }
   const gaps=reconcile(s).filter(x=>x.gap!==0);if(gaps.length)throw Error('ยอดคลังไม่ตรงกับประวัติ '+id+' ('+gaps.length+' รายการ)');
   return {id,path:entry.path,people:Object.keys(s.people||{}).length,items:Object.keys(s.items||{}).length,movements:Object.keys(s.movements||{}).length};

@@ -10,3 +10,4 @@ code,.stat strong,input[type=number]{font-family:'Roboto Mono',monospace;font-va
 
 .access-checks{display:flex;gap:24px}.access-checks label{display:flex;gap:8px;align-items:center}.access-checks input{width:auto;margin:0}
 .item-search{position:relative;flex:1;min-width:0}.item-search-options{position:absolute;top:100%;left:0;right:0;z-index:20;max-height:280px;overflow:auto;background:white;border:1px solid #bda5cd;border-radius:8px;box-shadow:0 6px 20px #0002}.item-search-options[hidden]{display:none}.item-search-options button{display:block;width:100%;text-align:left;border:0;border-radius:0;margin:0;white-space:normal}.item-search-options button:hover,.item-search-options button.selected{background:#eee5f5}.item-search-options p{padding:12px}
+.receipt-lines{white-space:normal;min-width:260px;max-width:460px}.receipt-editor h3{margin-top:28px}.receipt-review{margin-top:18px}
