@@ -89,8 +89,18 @@ Realtime Database transaction อ่าน/เขียน `/office` ทั้�
 
 สร้างแฟ้มในเมนูแฟ้มจัดซื้อ แล้วเชื่อมใบรับเข้าเดิม หรือเลือกแฟ้มขณะรับเข้าใหม่ เปิดเอกสารจากใบรับเข้าและ Dashboard ส่วนกลางได้ PDF/รูปเปิดในหน้าต่างเว็บ Word/Excel ดาวน์โหลดต้นฉบับ พื้นที่ใช้แสดงรวมไฟล์ทุกรุ่นของหน่วยงาน
 
-Cloud Functions (safety-documents) ใน asia-southeast1 ตรวจ Firebase Auth, App Check และสิทธิ์ /admins ล่าสุดทุกคำขอ ไม่ใช้ลิงก์ token สาธารณะถาวร ไม่สร้าง role หรือ claims ซ้ำกับฐานข้อมูล Binary อยู่ใน Storage ส่วนตัวภายใต้ documents/{live|qa}/{officeId}/{year}/{folderId}/{documentId}; backend อ่านไฟล์ส่งให้ผู้มีสิทธิ์โดย callable กลุ่มไฟล์และยอดคลังใช้แยก QA/live
+บริการเดิมสำหรับเอกสาร Storage (ยังไม่ได้ติดตั้งสำเร็จ และไม่ได้ใช้สำหรับไฟล์ใหม่): Cloud Functions (safety-documents) ใน asia-southeast1 ตรวจ Firebase Auth, App Check และสิทธิ์ /admins ล่าสุดทุกคำขอ ไม่ใช้ลิงก์ token สาธารณะถาวร ไม่สร้าง role หรือ claims ซ้ำกับฐานข้อมูล Binary อยู่ใน Storage ส่วนตัวภายใต้ documents/{live|qa}/{officeId}/{year}/{folderId}/{documentId}; backend อ่านไฟล์ส่งให้ผู้มีสิทธิ์โดย callable กลุ่มไฟล์และยอดคลังใช้แยก QA/live
 
-ติดตั้งด้วย Firebase CLI หลังเปิด Blaze และ default Storage bucket: firebase deploy --only functions:safety-documents,storage --project ppe-sanpatong โค้ด backend อยู่ functions/ มี package-lock สำหรับติดตั้งซ้ำ กฎ storage.rules ปฏิเสธการเข้าถึงตรงทั้งหมด คงสิทธิ์ Realtime Database เดิม ไม่มีการเปลี่ยน Rules บุคลากรหรือประวัติ
+ขั้นตอนเก่าสำหรับ Storage เท่านั้น ไม่ต้องดำเนินการสำหรับการเชื่อม Drive ใหม่: ติดตั้งด้วย Firebase CLI หลังเปิด Blaze และ default Storage bucket: firebase deploy --only functions:safety-documents,storage --project ppe-sanpatong โค้ด backend อยู่ functions/ มี package-lock สำหรับติดตั้งซ้ำ กฎ storage.rules ปฏิเสธการเข้าถึงตรงทั้งหมด คงสิทธิ์ Realtime Database เดิม ไม่มีการเปลี่ยน Rules บุคลากรหรือประวัติ
 
 คงคลังแบ่งหมวดตาม zone เดิม มีตัวกรองชื่อ/ไซส์/สีและเหลือน้อย/หมด รับเข้าเป็นยอดสุทธิของใบหลังแก้ไขและยกเลิก จ่ายออกนับใบเบิก และปรับตรวจนับแสดงแยก ผลต่างประวัติควรเป็นศูนย์ ส่งออก CSV ตามรายการที่กรอง และพิมพ์ PDF ได้
+
+## เปลี่ยนเอกสารใหม่ไป Google Drive (13 ตุลาคม 2569)
+
+ไฟล์ใหม่อัปโหลดจากหน้าแฟ้มจัดซื้อผ่าน Google Identity Services และ Drive API เข้า Drive ของ sarinyawannasuwong@gmail.com ใช้สิทธิ์ drive.file เฉพาะไฟล์ที่แอปสร้าง ไม่เก็บ access token ใน localStorage หรือฐานข้อมูล ไม่ขอ client secret ในเว็บ ตัวระบบตรวจบัญชีเจ้าของก่อนอัปโหลด เก็บแต่ข้อมูลรายการและรหัส Drive ใน Firebase เดิม แยกแฟ้ม live/qa และหน่วยงาน เอกสารเก่าที่ไม่มี provider ยังอ่านผ่าน backend เดิม ไม่มีการย้ายหรือลบไฟล์เดิมอัตโนมัติ
+
+การตั้งค่า: เปิด Google Drive API ใน project ppe-sanpatong; สร้าง Google Auth Platform branding และ OAuth client ชนิด Web application; Authorized JavaScript origins ใช้ https://pea-spt.github.io และ http://127.0.0.1:4173 สำหรับทดสอบ; เพิ่มบัญชีเจ้าของเป็น test user หากอยู่โหมด Testing แล้วใส่ public client ID ใน drive-config.js ต้องอนุมัติ User Data Policy และการให้สิทธิ์ Google ด้วยบัญชีเจ้าของก่อนใช้งาน
+
+ผู้ใช้อื่นเปิดลิงก์เอกสารได้เฉพาะเมื่อมีสิทธิ์ใน Drive ด้วย สิทธิ์ Firebase ไม่ได้ให้สิทธิ์ Drive อัตโนมัติ เว็บไม่เปิดไฟล์เป็นสาธารณะหรือเพิ่มผู้ร่วมใช้เอง หากบันทึก Firebase หลังอัปโหลดไม่สำเร็จ ระบบแจ้งรหัสไฟล์ที่เหลือใน Drive ให้ตรวจและกู้คืนก่อนลองซ้ำ ไม่รายงานว่าแนบสำเร็จ
+
+สถานะการเปลี่ยน: ตั้ง OAuth client ID และ Authorized JavaScript origins แล้ว, Drive API Enabled, เพิ่มบัญชีเจ้าของเป็น test user และเผยแพร่ Database Rules แล้ว; ยังรอเจ้าของลงชื่อเข้าใช้และอนุญาต Drive แล้วทดสอบอัปโหลด QA จริง เปิดจาก dashboard และตรวจการเข้าถึงของผู้ดูแลรายอื่นก่อนรับรองการใช้งานครบวงจร

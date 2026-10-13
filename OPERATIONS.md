@@ -46,3 +46,5 @@
 ไฟล์ JSON สำรองฐานข้อมูลรวมแฟ้มและรายการไฟล์ แต่ไม่รวม binary ต้องสำรอง objects ใน bucket ppe-sanpatong.firebasestorage.app โดยรักษา path และ metadata (sha256, officeId, environment, folderId) และผูกกับ snapshot JSON เดียวกัน ใช้การสำรอง Storage ของผู้ดูแล Google Cloud และตรวจทดลองเปิดไฟล์ก่อนกู้คืนจริง ห้ามถือว่า JSON เพียงไฟล์เดียวสำรองเอกสารครบ
 
 ไม่ลบไฟล์อัตโนมัติเมื่อยกเลิกใบรับเข้า เอกสารทุกรุ่นยังอยู่เพื่อการตรวจสอบ พื้นที่ใช้รวมไฟล์เก่าด้วย ตรวจ Billing ของ Blaze และการใช้งาน Cloud Functions/Storage เป็นระยะ ไม่มีการตั้ง hard quota หรืออายุเก็บตามกฎหมายโดยอัตโนมัติ
+
+เอกสารใหม่ provider=google-drive: สำรองไฟล์ต้นฉบับจาก Drive ของ sarinyawannasuwong@gmail.com พร้อม snapshot JSON ที่เก็บ driveFileId และ SHA-256; JSON ไม่รวมเนื้อหาไฟล์ ตรวจสิทธิ์ Drive และทดลองเปิดเอกสารหลังการกู้คืน รหัสไฟล์อาจเปลี่ยนเมื่ออัปโหลดคืน จึงต้องตรวจและปรับรายการอ้างอิงอย่างระมัดระวัง เอกสาร Storage เดิมยังใช้ขั้นตอนสำรองเดิม ส่วนไฟล์ใหม่ไม่ใช้ Cloud Functions/Storage สำหรับ binary
