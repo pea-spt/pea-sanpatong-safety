@@ -1,5 +1,5 @@
 import {mountStock} from './stock-view.js';
-import {mountProcurements,mountMeetingDocuments,openFolder} from './procurement-ui.js';
+import {mountProcurements,mountMeetingDocuments,openFolder} from './procurement-ui.js?v=20261013-2';
 import {configureDocuments} from './document-client.js';
 import {linkReceipt} from './procurement.js';
 import {mountReceipts} from './receipt-ui.js';
