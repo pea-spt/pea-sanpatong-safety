@@ -1,4 +1,5 @@
 import {driveConfig} from './drive-config.js';
+import {attachWithdrawalEvidence} from './withdrawal-evidence.js';
 import {inspectFile,driveUrl,attachDocument} from './drive-policy.js?v=20261013-drive100';
 let legacyInvoke,backend,token='',expires=0,loadGoogle;
 export function configureDocuments(functions,httpsCallable,adapter){legacyInvoke=(name,data)=>httpsCallable(functions,name,{timeout:120000})(data).then(r=>r.data);backend=adapter;}
@@ -35,10 +36,12 @@ async function driveFolder(context,folder){
  if(existing.files?.length)return existing.files[0].id;
  return (await api('https://www.googleapis.com/drive/v3/files?fields=id',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:`PEA Safety ${context.environment} • ${context.officeId} • ${folder.year} • ${folder.title}`,mimeType:'application/vnd.google-apps.folder',appProperties:{safetyFolder:key}})})).id;
 }
-export async function uploadFile(context,folderId,file,category,replacesId=''){
+export async function uploadFile(context,folderId,file,category,replacesId='',withdrawal=false){
  if(!backend)throw Error('ยังไม่ได้เชื่อมฐานข้อมูลเอกสาร');
  const actor=backend.actor();if(!actor)throw Error('กรุณาเข้าสู่ระบบผู้ดูแล');
- const folder=await backend.folder(context,folderId);if(!folder)throw Error('ไม่พบแฟ้มจัดซื้อ');
+ const movement=withdrawal?await backend.movement(context,folderId):null;
+ if(withdrawal&&movement?.kind!=='withdrawal')throw Error('ไม่พบรายการเบิกจ่าย');
+ const folder=withdrawal?{year:Number(movement.date.slice(0,4))+543,title:`หลักฐานเบิกจ่าย ${movement.date} ${movement.personName||''}`} : await backend.folder(context,folderId);if(!folder)throw Error('ไม่พบแฟ้มจัดซื้อ');
  const {mime,sha256}=await inspectFile(file,category),parent=await driveFolder(context,{...folder,id:folderId}),id=crypto.randomUUID();
  const metadata={name:file.name,parents:[parent],appProperties:{safetyDocument:id,officeId:context.officeId,environment:context.environment,folderId}};
  let uploaded;
@@ -55,12 +58,14 @@ export async function uploadFile(context,folderId,file,category,replacesId=''){
   uploaded=await api('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Content-Type':`multipart/related; boundary=${boundary}`},body});
  }
  const record={id,folderId,name:file.name,category,replacesId,size:file.size,mime,sha256,status:'ready',provider:'google-drive',driveFileId:uploaded.id,driveOwnerEmail:driveConfig.ownerEmail,by:actor.uid,byEmail:actor.email,ts:backend.timestamp()};
- try{await backend.save(context,current=>attachDocument(current,record));}catch(e){
+ if(withdrawal){record.movementId=folderId;delete record.folderId;}
+ try{await backend.save(context,current=>withdrawal?attachWithdrawalEvidence(current,record):attachDocument(current,record));}catch(e){
   // Keep the original in Drive for recovery; never claim that its metadata was saved.
   throw Error(`ไฟล์อยู่ใน Drive แล้ว แต่บันทึกเข้าแฟ้มไม่สำเร็จ: ${e.message} • เปิด Drive ตรวจไฟล์ ${uploaded.id} ก่อนลองใหม่`);
  }
  return record;
 }
+export function uploadWithdrawalFile(context,movementId,file,replacesId=''){return uploadFile(context,movementId,file,'รูปประกอบ',replacesId,true);}
 export async function openFile(context,id){
  const record=await backend?.document(context,id);
  if(record?.provider==='google-drive'){

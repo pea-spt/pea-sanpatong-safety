@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {connectDrive,configureDocuments,uploadFile,documentCall,resetDrive} from '../document-client.js';
+import {connectDrive,configureDocuments,uploadFile,uploadWithdrawalFile,documentCall,resetDrive} from '../document-client.js';
 import {driveConfig} from '../drive-config.js';
 test('Drive rejects wrong owner and never reports attachment success after metadata save fails',async()=>{
  const priorGoogle=globalThis.google,priorFetch=globalThis.fetch;
@@ -12,6 +12,17 @@ test('Drive rejects wrong owner and never reports attachment success after metad
   await assert.rejects(connectDrive(),/เลือกบัญชี/);assert.equal((await documentCall('documentHealth')).connected,false);
   owner=driveConfig.ownerEmail;granted=false;await assert.rejects(connectDrive(),/ไม่ได้รับอนุญาต/);granted=true;await connectDrive();assert.equal(requested.prompt,'');assert.equal(configuration.login_hint,driveConfig.ownerEmail);assert.equal(configuration.include_granted_scopes,false);assert.equal(scopes,'https://www.googleapis.com/auth/drive.file');
   await assert.rejects(uploadFile({officeId:'sanpatong',environment:'qa'},'f',new File(['%PDF-1.4 test'],'test.pdf'),'ตรวจรับ'),/ไฟล์อยู่ใน Drive แล้ว.*offline/);assert.equal(writes,1);
+ }finally{resetDrive();globalThis.google=priorGoogle;globalThis.fetch=priorFetch;}
+});
+test('withdrawal upload attaches to existing bill without procurement or inventory writes',async()=>{
+ const priorGoogle=globalThis.google,priorFetch=globalThis.fetch;
+ let state={items:{a:{qty:3}},movements:{w:{id:'w',kind:'withdrawal',date:'2026-10-13',personName:'ทดสอบ',lines:[{itemId:'a',qty:2,delta:-2}]}}};
+ globalThis.google={accounts:{oauth2:{initTokenClient:o=>({requestAccessToken:()=>o.callback({access_token:'test',expires_in:3600,scope:o.scope})})}}};
+ globalThis.fetch=async url=>Response.json(url.includes('/about?')?{user:{emailAddress:driveConfig.ownerEmail}}:url.includes('uploadType=')?{id:'withdrawal_file_123'}:{files:[{id:'withdrawal_folder_123'}]});
+ configureDocuments({},()=>{}, {actor:()=>({uid:'test',email:'test@example.test'}),movement:async(c,id)=>state.movements[id],timestamp:()=>1,save:async(c,update)=>{state=update(state);}});
+ try{await connectDrive();const file=new File(['%PDF-1.4 test'],'proof.pdf');const record=await uploadWithdrawalFile({officeId:'sanpatong',environment:'qa'},'w',file);
+ assert.equal(record.movementId,'w');assert.equal(record.folderId,undefined);assert.equal(state.items.a.qty,3);assert.equal(state.procurements,undefined);assert.equal(state.movements.w.files[record.id].driveFileId,'withdrawal_file_123');
+ await assert.rejects(uploadWithdrawalFile({officeId:'sanpatong',environment:'qa'},'missing',file),/ไม่พบ/);
  }finally{resetDrive();globalThis.google=priorGoogle;globalThis.fetch=priorFetch;}
 });
 test('large Drive uploads use a session and save only after content finishes',async()=>{
