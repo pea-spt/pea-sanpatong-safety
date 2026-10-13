@@ -1,3 +1,4 @@
+import {searchSelects} from './select-search.js';
 import {documentCall,connectDrive,uploadWithdrawalFile} from './document-client.js?v=20261013-withdrawal';
 import {driveUrl} from './drive-policy.js';
 import {editWithdrawalEvidence} from './withdrawal-evidence.js';
@@ -25,6 +26,7 @@ export function mountWithdrawals(host,options){
   const movement=getState().movements?.[id];if(movement?.kind!=='withdrawal')return;
   const key=scope(context)+':'+id,files=Object.values(movement.files||{}),active=files.filter(f=>!files.some(n=>n.replacesId===f.id));
   editor.innerHTML=`<h3>หลักฐานเบิกจ่าย ${esc(movement.personName)} • ${esc(movement.date)}</h3><p>รหัสรายการ ${esc(id)}</p><form class="withdrawal-edit"><label>วันที่<input name="date" type="date" required value="${esc(movement.date)}"></label><label>หมายเหตุ / เหตุผล<input name="note" value="${esc(movement.note)}"></label><label>ลิงก์หลักฐาน (ไม่บังคับ)<input name="evidence" type="url" value="${esc(movement.evidence)}"></label><button type="submit">บันทึกการแก้ไข</button></form><p class="hint">แก้วันที่ หมายเหตุ และหลักฐานได้ โดยยอดจ่ายและยอดคลังไม่เปลี่ยน</p>${files.map(f=>`<p><a target="_blank" rel="noopener noreferrer" href="${driveUrl(f.driveFileId)}">${esc(f.name)}</a> ${active.includes(f)?'':'(รุ่นเก่า)'}</p>`).join('')}<div class="withdrawal-file-input"></div><label>การแนบไฟล์<select class="replace-file"><option value="">เพิ่มหลักฐานใหม่</option>${active.map(f=>`<option value="${esc(f.id)}">แนบรุ่นใหม่แทน ${esc(f.name)}</option>`).join('')}</select></label><p class="pending-files"></p><button type="button" class="withdrawal-upload">เชื่อม Drive / อัปโหลดหลักฐาน</button><p class="upload-status" role="status"></p>`;
+  searchSelects(editor,'select.replace-file');
   const status=editor.querySelector('.upload-status'),upload=editor.querySelector('.withdrawal-upload'),fileHost=editor.querySelector('.withdrawal-file-input');
   const showPending=()=>{editor.querySelector('.pending-files').textContent=(pending.get(key)||[]).map(f=>f.name).join(' • ');upload.disabled=uploading.has(key);fileHost.querySelector('input').disabled=uploading.has(key);editor.querySelector('.replace-file').disabled=uploading.has(key);};
   mountWithdrawalFiles(fileHost,files=>{pending.set(key,files);showPending();});showPending();
