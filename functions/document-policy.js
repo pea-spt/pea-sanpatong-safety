@@ -1,0 +1,10 @@
+export const MAX_BYTES=10*1024*1024;
+export const documentTypes=['ขอซื้อ','อนุมัติ','ใบสั่งซื้อ','ใบส่งของ','ตรวจรับ','ใบแจ้งหนี้','รูปประกอบ','อื่น ๆ'];
+export function officePath(office,environment){if(!['sanpatong','maewang'].includes(office)||!['live','qa'].includes(environment))throw Error('หน่วยงานหรือพื้นที่ไม่ถูกต้อง');return (environment==='qa'?'qa/':'')+(office==='sanpatong'?'office':'offices/maewang');}
+export function allowedOffice(permissions,office){return permissions===true?office==='sanpatong':permissions?.[office]===true;}
+export function safeId(id){if(typeof id!=='string'||!/^[a-zA-Z0-9_-]{1,100}$/.test(id))throw Error('รหัสไม่ถูกต้อง');return id;}
+export function validateUpload(data){const id=safeId(data.id),folderId=safeId(data.folderId),name=String(data.name||'').replace(/[\/\\\x00-\x1f]/g,'_').trim();if(!name||name.length>180||!documentTypes.includes(data.category))throw Error('ชื่อหรือประเภทเอกสารไม่ถูกต้อง');if(typeof data.base64!=='string'||data.base64.length>Math.ceil(MAX_BYTES/3)*4||!data.base64.length||!/^[A-Za-z0-9+/]*={0,2}$/.test(data.base64))throw Error('ไฟล์ไม่ถูกต้องหรือเกิน 10 MB');const bytes=Buffer.from(data.base64,'base64');if(!bytes.length||bytes.length>MAX_BYTES)throw Error('ไฟล์ต้องมีขนาดไม่เกิน 10 MB');
+ const ext=name.split('.').at(-1).toLowerCase(),mime={pdf:'application/pdf',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xls:'application/vnd.ms-excel',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png'}[ext];
+ const signature=bytes.subarray(0,8).toString('hex');const valid=ext==='pdf'?bytes.subarray(0,5).toString()==='%PDF-':['doc','xls'].includes(ext)?signature==='d0cf11e0a1b11ae1':['docx','xlsx'].includes(ext)?signature.startsWith('504b0304'):['jpg','jpeg'].includes(ext)?signature.startsWith('ffd8ff'):ext==='png'?signature==='89504e470d0a1a0a':false;
+ if(!mime||!valid)throw Error('รองรับ PDF, Word, Excel, JPG และ PNG ที่ตรงกับชนิดไฟล์จริง');return {id,folderId,name,mime,bytes,category:data.category,replacesId:data.replacesId?safeId(data.replacesId):''};
+}

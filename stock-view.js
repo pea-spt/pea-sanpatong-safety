@@ -1,0 +1,17 @@
+export const stockZones=['ศีรษะ','ใบหน้า / ตา / หายใจ','ลำตัว / กันตก','มือ','เท้า / ปีนเสา','พื้นที่ทำงาน'];
+export function stockRows(state,{query='',onlyLow=false}={}){
+ const sums={};for(const m of Object.values(state.movements||{}))for(const l of m.lines||[]){const x=sums[l.itemId]||={received:0,issued:0,adjusted:0,expected:0};x.expected+=l.delta;if(m.kind==='receipt')x.received+=l.delta;else if(m.kind==='withdrawal')x.issued-=l.delta;else if(m.receiptId)x.received+=l.delta;else x.adjusted+=l.delta;}
+ const words=query.toLocaleLowerCase('th').trim().split(/\s+/).filter(Boolean);
+ return Object.entries(state.items||{}).filter(([,x])=>x.active).map(([id,x])=>({id,...x,...(sums[id]||{received:0,issued:0,adjusted:0,expected:0})})).filter(x=>(!onlyLow||x.qty<=x.minimum)&&words.every(w=>[x.name,x.variant,x.zone].join(' ').toLocaleLowerCase('th').includes(w))).sort((a,b)=>a.name.localeCompare(b.name,'th')||(a.variant||'').localeCompare(b.variant||'','th'));
+}
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export function mountStock(host,state,{adjust,exportCSV,print}){
+ host.innerHTML=`<section class="card"><h2>รายการคงคลังแยกหมวด</h2><div class="stock-toolbar"><label>ค้นหารายการ<input type="search" autocomplete="off" placeholder="ชื่ออุปกรณ์ สี ไซส์ หรือหมวด"></label><label class="stock-check"><input type="checkbox">แสดงเฉพาะเหลือน้อย / หมด</label><div class="actions"><button type="button" data-export>ส่งออก CSV (เปิดใน Excel)</button><button type="button" data-print>พิมพ์ / บันทึก PDF</button></div></div><p class="stock-count"></p><div class="stock-groups"></div><div id="adjust"></div></section>`;
+ const search=host.querySelector('input[type=search]'),low=host.querySelector('input[type=checkbox]');let visible=[];
+ function draw(){visible=stockRows(state,{query:search.value,onlyLow:low.checked});host.querySelector('.stock-count').textContent=`${visible.length} รายการ • ยอดรับเข้าแสดงตามใบล่าสุดหลังแก้ไข / ยกเลิก`;
+  const zones=[...stockZones,...new Set(visible.map(x=>x.zone||'ไม่ระบุหมวด').filter(z=>!stockZones.includes(z)))];
+  host.querySelector('.stock-groups').innerHTML=zones.map((zone,i)=>{const entries=visible.filter(x=>(x.zone||'ไม่ระบุหมวด')===zone);if(!entries.length)return '';return `<section class="stock-zone zone-${i%6}"><h3><span class="stock-zone-icon">${['◉','◈','▣','✋','▰','⚑'][i%6]}</span>${esc(zone)}<small>${entries.length} รายการ</small></h3><div class="table-wrap"><table><thead><tr><th>ชื่อรายการ</th><th>ประเภทย่อย / ไซส์ / สี</th><th>คงเหลือ</th><th>หน่วย</th><th>รับเข้า</th><th>จ่ายออก</th><th>ปรับตรวจนับ</th><th>ผลต่างประวัติ</th><th>ตรวจนับ</th></tr></thead><tbody>${entries.map(x=>`<tr><td><strong>${esc(x.name)}</strong></td><td>${esc(x.variant||'—')}</td><td><span class="stock-qty ${x.qty===0?'empty-stock':x.qty<=x.minimum?'low-stock':'ok-stock'}">${x.qty}</span></td><td>${esc(x.unit)}</td><td>${x.received}</td><td>${x.issued}</td><td>${x.adjusted}</td><td class="${x.expected!==x.qty?'danger':''}">${x.expected-x.qty}</td><td><button type="button" data-adjust="${esc(x.id)}">ปรับตรวจนับ</button></td></tr>`).join('')}</tbody></table></div></section>`;}).join('')||'<p>ไม่พบรายการ</p>';
+  host.querySelectorAll('[data-adjust]').forEach(b=>b.onclick=()=>adjust(b.dataset.adjust));
+ }
+ search.oninput=draw;low.onchange=draw;host.querySelector('[data-export]').onclick=()=>exportCSV(visible);host.querySelector('[data-print]').onclick=print;draw();
+}

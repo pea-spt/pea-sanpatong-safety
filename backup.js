@@ -27,6 +27,10 @@ export function inspectBackup(value){
    const expected=Object.entries(deltas).filter(([,n])=>n!==0).sort(),m=s.movements[rid];
    if(expected.length&&(!m||m.kind!=='adjustment'||m.receiptId!==r.receiptId||JSON.stringify(m.lines.map(l=>[l.itemId,l.delta]).sort())!==JSON.stringify(expected)))throw Error('ยอดแก้ใบรับเข้าไม่ตรงกับส่วนต่าง');
   }
+  for(const key of ['procurements','receiptFolders','documents'])if(s[key]!==undefined&&!object(s[key]))throw Error('รูปแบบแฟ้มเอกสารไม่ถูกต้อง');
+  for(const [fid,f] of Object.entries(s.procurements||{}))if(!object(f)||f.id!==fid||!f.title?.trim()||!f.reference?.trim()||!Number.isSafeInteger(f.year))throw Error('แฟ้มจัดซื้อไม่ถูกต้อง');
+  for(const [rid,fid] of Object.entries(s.receiptFolders||{}))if(s.movements?.[rid]?.kind!=='receipt'||!s.procurements?.[fid])throw Error('ใบรับเข้าไม่ตรงกับแฟ้มจัดซื้อ');
+  for(const [did,d] of Object.entries(s.documents||{}))if(!object(d)||d.id!==did||!s.procurements?.[d.folderId]||d.status!=='ready'||!Number.isSafeInteger(d.size)||d.size<=0||d.size>10*1024*1024||!d.name||!d.mime||!d.sha256||(d.replacesId&&s.documents?.[d.replacesId]?.folderId!==d.folderId))throw Error('ข้อมูลไฟล์แนบไม่ถูกต้อง');
   const gaps=reconcile(s).filter(x=>x.gap!==0);if(gaps.length)throw Error('ยอดคลังไม่ตรงกับประวัติ '+id+' ('+gaps.length+' รายการ)');
   return {id,path:entry.path,people:Object.keys(s.people||{}).length,items:Object.keys(s.items||{}).length,movements:Object.keys(s.movements||{}).length};
  });
