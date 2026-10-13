@@ -17,8 +17,9 @@ export async function prepareDrive(){
 }
 export async function connectDrive(){
  if(!globalThis.google?.accounts?.oauth2)throw Error('บริการ Google ยังไม่พร้อม กรุณาลองอีกครั้ง');
+ if(token&&Date.now()<expires)return {ownerEmail:driveConfig.ownerEmail};
  resetDrive();
- await new Promise((resolve,reject)=>{const client=google.accounts.oauth2.initTokenClient({client_id:driveConfig.clientId,scope:'https://www.googleapis.com/auth/drive.file',hint:driveConfig.ownerEmail,callback:r=>{if(r.error||!r.access_token)return reject(Error('ไม่ได้รับอนุญาตเชื่อม Google Drive'));token=r.access_token;expires=Date.now()+Math.max(0,Number(r.expires_in)-60)*1000;resolve();},error_callback:()=>reject(Error('การเชื่อม Google ถูกยกเลิก'))});client.requestAccessToken({prompt:'select_account'});});
+ await new Promise((resolve,reject)=>{const client=google.accounts.oauth2.initTokenClient({client_id:driveConfig.clientId,scope:'https://www.googleapis.com/auth/drive.file',login_hint:driveConfig.ownerEmail,include_granted_scopes:false,callback:r=>{if(r.error||!r.access_token||!String(r.scope||'').split(' ').includes('https://www.googleapis.com/auth/drive.file'))return reject(Error('ไม่ได้รับอนุญาตเชื่อม Google Drive'));token=r.access_token;expires=Date.now()+Math.max(0,Number(r.expires_in)-60)*1000;resolve();},error_callback:()=>reject(Error('การเชื่อม Google ถูกยกเลิก'))});client.requestAccessToken({prompt:''});});
  try{const profile=await api('https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)');if(profile.user?.emailAddress?.toLowerCase()!==driveConfig.ownerEmail.toLowerCase())throw Error(`เลือกบัญชี ${driveConfig.ownerEmail} เพื่อเก็บเอกสาร`);}catch(e){resetDrive();throw e;}
  return {ownerEmail:driveConfig.ownerEmail};
 }
