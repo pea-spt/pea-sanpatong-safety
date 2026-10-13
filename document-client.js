@@ -1,14 +1,14 @@
 import {driveConfig} from './drive-config.js';
-import {inspectFile,driveUrl,attachDocument} from './drive-policy.js';
+import {inspectFile,driveUrl,attachDocument} from './drive-policy.js?v=20261013-drive100';
 let legacyInvoke,backend,token='',expires=0,loadGoogle;
 export function configureDocuments(functions,httpsCallable,adapter){legacyInvoke=(name,data)=>httpsCallable(functions,name,{timeout:120000})(data).then(r=>r.data);backend=adapter;}
 export function resetDrive(){token='';expires=0;}
-async function api(path,options={}){
+async function api(path,options={},raw=false){
  if(!token||Date.now()>=expires)throw Error('กรุณากดเชื่อม Google Drive อีกครั้ง');
  const response=await fetch(path,{...options,headers:{...options.headers,Authorization:`Bearer ${token}`}});
  if(response.status===401){resetDrive();throw Error('การเชื่อม Google หมดอายุ กรุณาเชื่อมอีกครั้ง');}
  if(!response.ok){const detail=await response.json().catch(()=>({}));throw Error(detail.error?.message||'Google Drive ไม่พร้อมใช้งาน');}
- return response.status===204?null:response.json();
+ return raw?response:response.status===204?null:response.json();
 }
 export async function prepareDrive(){
  if(!driveConfig.clientId)throw Error('ยังไม่ได้ตั้งค่าการเชื่อม Google Drive');
@@ -40,9 +40,20 @@ export async function uploadFile(context,folderId,file,category,replacesId=''){
  const actor=backend.actor();if(!actor)throw Error('กรุณาเข้าสู่ระบบผู้ดูแล');
  const folder=await backend.folder(context,folderId);if(!folder)throw Error('ไม่พบแฟ้มจัดซื้อ');
  const {mime,sha256}=await inspectFile(file,category),parent=await driveFolder(context,{...folder,id:folderId}),id=crypto.randomUUID();
- const boundary='pea_'+crypto.randomUUID(),metadata={name:file.name,parents:[parent],appProperties:{safetyDocument:id,officeId:context.officeId,environment:context.environment,folderId}};
- const body=new Blob([`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n--${boundary}\r\nContent-Type: ${mime}\r\n\r\n`,file,`\r\n--${boundary}--`]);
- const uploaded=await api('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Content-Type':`multipart/related; boundary=${boundary}`},body});
+ const metadata={name:file.name,parents:[parent],appProperties:{safetyDocument:id,officeId:context.officeId,environment:context.environment,folderId}};
+ let uploaded;
+ if(file.size>5*1024*1024){
+  const session=await api('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id',{method:'POST',headers:{'Content-Type':'application/json; charset=UTF-8','X-Upload-Content-Type':mime,'X-Upload-Content-Length':String(file.size)},body:JSON.stringify(metadata)},true);
+  const location=session.headers.get('Location');
+  if(!location)throw Error('Google Drive ไม่ส่งช่องทางอัปโหลดไฟล์ กรุณาลองอีกครั้ง');
+  const url=new URL(location);
+  if(url.origin!=='https://www.googleapis.com'||url.pathname!=='/upload/drive/v3/files')throw Error('ช่องทางอัปโหลด Google Drive ไม่ถูกต้อง');
+  uploaded=await api(url.href,{method:'PUT',headers:{'Content-Type':mime},body:file});
+ }else{
+  const boundary='pea_'+crypto.randomUUID();
+  const body=new Blob([`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n--${boundary}\r\nContent-Type: ${mime}\r\n\r\n`,file,`\r\n--${boundary}--`]);
+  uploaded=await api('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Content-Type':`multipart/related; boundary=${boundary}`},body});
+ }
  const record={id,folderId,name:file.name,category,replacesId,size:file.size,mime,sha256,status:'ready',provider:'google-drive',driveFileId:uploaded.id,driveOwnerEmail:driveConfig.ownerEmail,by:actor.uid,byEmail:actor.email,ts:backend.timestamp()};
  try{await backend.save(context,current=>attachDocument(current,record));}catch(e){
   // Keep the original in Drive for recovery; never claim that its metadata was saved.

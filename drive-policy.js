@@ -1,7 +1,7 @@
 export const documentCategories=['ขอซื้อ','อนุมัติ','ใบสั่งซื้อ','ใบส่งของ','ตรวจรับ','ใบแจ้งหนี้','รูปประกอบ','อื่น ๆ'];
 export function driveUrl(id){if(typeof id!=='string'||!/^[A-Za-z0-9_-]{10,200}$/.test(id))throw Error('รหัสไฟล์ Google Drive ไม่ถูกต้อง');return `https://drive.google.com/file/d/${id}/view`;}
 export async function inspectFile(file,category){
- if(!file.size||file.size>10*1024*1024)throw Error('ไฟล์ต้องมีขนาดไม่เกิน 10 MB');
+ if(!file.size||file.size>100*1024*1024)throw Error('ไฟล์ต้องมีขนาดไม่เกิน 100 MB');
  if(!documentCategories.includes(category)||!file.name||file.name.length>180)throw Error('ชื่อหรือประเภทเอกสารไม่ถูกต้อง');
  const ext=file.name.split('.').at(-1).toLowerCase(),bytes=new Uint8Array(await file.arrayBuffer()),hex=[...bytes.slice(0,8)].map(n=>n.toString(16).padStart(2,'0')).join('');
  const mime={pdf:'application/pdf',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xls:'application/vnd.ms-excel',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png'}[ext];

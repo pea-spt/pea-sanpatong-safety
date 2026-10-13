@@ -98,7 +98,7 @@
       },
       "documents": {
         "$id": {
-          ".validate": "newData.hasChildren(['id','folderId','name','category','size','mime','sha256','status','by','byEmail','ts']) && newData.child('id').val() === $id && newData.child('status').val() === 'ready' && newData.child('size').isNumber() && newData.child('size').val() > 0 && newData.child('size').val() <= 10485760 && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now)) && (!newData.hasChild('provider') || (newData.child('provider').val() === 'google-drive' && newData.child('driveFileId').isString() && newData.child('driveFileId').val().matches(/^[A-Za-z0-9_-]{10,200}$/) && newData.child('driveOwnerEmail').val() === 'sarinyawannasuwong@gmail.com'))"
+          ".validate": "newData.hasChildren(['id','folderId','name','category','size','mime','sha256','status','by','byEmail','ts']) && newData.child('id').val() === $id && newData.child('status').val() === 'ready' && newData.child('size').isNumber() && newData.child('size').val() > 0 && newData.child('size').val() <= 104857600 && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now)) && (!newData.hasChild('provider') || (newData.child('provider').val() === 'google-drive' && newData.child('driveFileId').isString() && newData.child('driveFileId').val().matches(/^[A-Za-z0-9_-]{10,200}$/) && newData.child('driveOwnerEmail').val() === 'sarinyawannasuwong@gmail.com'))"
         }
       }
     },
@@ -191,7 +191,7 @@
         },
         "documents": {
           "$id": {
-            ".validate": "newData.hasChildren(['id','folderId','name','category','size','mime','sha256','status','by','byEmail','ts']) && newData.child('id').val() === $id && newData.child('status').val() === 'ready' && newData.child('size').isNumber() && newData.child('size').val() > 0 && newData.child('size').val() <= 10485760 && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now)) && (!newData.hasChild('provider') || (newData.child('provider').val() === 'google-drive' && newData.child('driveFileId').isString() && newData.child('driveFileId').val().matches(/^[A-Za-z0-9_-]{10,200}$/) && newData.child('driveOwnerEmail').val() === 'sarinyawannasuwong@gmail.com'))"
+            ".validate": "newData.hasChildren(['id','folderId','name','category','size','mime','sha256','status','by','byEmail','ts']) && newData.child('id').val() === $id && newData.child('status').val() === 'ready' && newData.child('size').isNumber() && newData.child('size').val() > 0 && newData.child('size').val() <= 104857600 && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now)) && (!newData.hasChild('provider') || (newData.child('provider').val() === 'google-drive' && newData.child('driveFileId').isString() && newData.child('driveFileId').val().matches(/^[A-Za-z0-9_-]{10,200}$/) && newData.child('driveOwnerEmail').val() === 'sarinyawannasuwong@gmail.com'))"
           }
         }
       }
@@ -285,7 +285,7 @@
         },
         "documents": {
           "$id": {
-            ".validate": "newData.hasChildren(['id','folderId','name','category','size','mime','sha256','status','by','byEmail','ts']) && newData.child('id').val() === $id && newData.child('status').val() === 'ready' && newData.child('size').isNumber() && newData.child('size').val() > 0 && newData.child('size').val() <= 10485760 && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now)) && (!newData.hasChild('provider') || (newData.child('provider').val() === 'google-drive' && newData.child('driveFileId').isString() && newData.child('driveFileId').val().matches(/^[A-Za-z0-9_-]{10,200}$/) && newData.child('driveOwnerEmail').val() === 'sarinyawannasuwong@gmail.com'))"
+            ".validate": "newData.hasChildren(['id','folderId','name','category','size','mime','sha256','status','by','byEmail','ts']) && newData.child('id').val() === $id && newData.child('status').val() === 'ready' && newData.child('size').isNumber() && newData.child('size').val() > 0 && newData.child('size').val() <= 104857600 && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now)) && (!newData.hasChild('provider') || (newData.child('provider').val() === 'google-drive' && newData.child('driveFileId').isString() && newData.child('driveFileId').val().matches(/^[A-Za-z0-9_-]{10,200}$/) && newData.child('driveOwnerEmail').val() === 'sarinyawannasuwong@gmail.com'))"
           }
         }
       },
@@ -378,7 +378,7 @@
           },
           "documents": {
             "$id": {
-              ".validate": "newData.hasChildren(['id','folderId','name','category','size','mime','sha256','status','by','byEmail','ts']) && newData.child('id').val() === $id && newData.child('status').val() === 'ready' && newData.child('size').isNumber() && newData.child('size').val() > 0 && newData.child('size').val() <= 10485760 && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now)) && (!newData.hasChild('provider') || (newData.child('provider').val() === 'google-drive' && newData.child('driveFileId').isString() && newData.child('driveFileId').val().matches(/^[A-Za-z0-9_-]{10,200}$/) && newData.child('driveOwnerEmail').val() === 'sarinyawannasuwong@gmail.com'))"
+              ".validate": "newData.hasChildren(['id','folderId','name','category','size','mime','sha256','status','by','byEmail','ts']) && newData.child('id').val() === $id && newData.child('status').val() === 'ready' && newData.child('size').isNumber() && newData.child('size').val() > 0 && newData.child('size').val() <= 104857600 && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now)) && (!newData.hasChild('provider') || (newData.child('provider').val() === 'google-drive' && newData.child('driveFileId').isString() && newData.child('driveFileId').val().matches(/^[A-Za-z0-9_-]{10,200}$/) && newData.child('driveOwnerEmail').val() === 'sarinyawannasuwong@gmail.com'))"
             }
           }
         }

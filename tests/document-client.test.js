@@ -14,3 +14,19 @@ test('Drive rejects wrong owner and never reports attachment success after metad
   await assert.rejects(uploadFile({officeId:'sanpatong',environment:'qa'},'f',new File(['%PDF-1.4 test'],'test.pdf'),'ตรวจรับ'),/ไฟล์อยู่ใน Drive แล้ว.*offline/);assert.equal(writes,1);
  }finally{resetDrive();globalThis.google=priorGoogle;globalThis.fetch=priorFetch;}
 });
+test('large Drive uploads use a session and save only after content finishes',async()=>{
+ const priorGoogle=globalThis.google,priorFetch=globalThis.fetch;
+ const file=new File(['%PDF-1.4',new Uint8Array(11*1024*1024)],'large.pdf');let uploaded=false,saved=0;
+ globalThis.google={accounts:{oauth2:{initTokenClient:options=>({requestAccessToken:()=>options.callback({access_token:'test-only',expires_in:3600,scope:options.scope})})}}};
+ globalThis.fetch=async(url,options)=>{
+  if(url.includes('/about?'))return Response.json({user:{emailAddress:driveConfig.ownerEmail}});
+  if(url.includes('upload_id=')){assert.equal(options.method,'PUT');assert.equal(options.body,file);uploaded=true;return Response.json({id:'large_drive_file_123'});}
+  if(url.includes('uploadType=resumable')){assert.equal(options.headers['X-Upload-Content-Length'],String(file.size));assert.equal(options.headers['X-Upload-Content-Type'],'application/pdf');return new Response(null,{headers:{Location:'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&upload_id=test'}});}
+  return Response.json({files:[{id:'test_folder_123'}]});
+ };
+ configureDocuments({},()=>{}, {actor:()=>({uid:'test',email:'test@example.test'}),folder:async()=>({id:'f',year:2570,title:'Test'}),timestamp:()=>1,save:async (context,update)=>{assert.ok(uploaded);const next=update({procurements:{f:{id:'f'}}});assert.equal(Object.values(next.documents)[0].size,file.size);saved++;}});
+ try{await connectDrive();await uploadFile({officeId:'sanpatong',environment:'qa'},'f',file,'ตรวจรับ');assert.equal(saved,1);
+  uploaded=false;globalThis.fetch=async url=>url.includes('uploadType=resumable')?new Response(null,{headers:{Location:'https://evil.example/upload'}}):Response.json({files:[{id:'test_folder_123'}]});
+  await assert.rejects(uploadFile({officeId:'sanpatong',environment:'qa'},'f',file,'ตรวจรับ'),/ช่องทางอัปโหลด/);assert.equal(saved,1);
+ }finally{resetDrive();globalThis.google=priorGoogle;globalThis.fetch=priorFetch;}
+});

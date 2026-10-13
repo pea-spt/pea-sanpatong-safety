@@ -19,3 +19,9 @@ test('Drive upload inspects bytes and computes digest rather than trusting MIME'
  await assert.rejects(inspectFile(new File(['%PDF-1.4'],'good.pdf'),'unknown'));
  await assert.rejects(inspectFile(new File([],'empty.pdf'),'ตรวจรับ'));
 });
+test('Drive accepts exactly 100 MB and rejects larger files before reading bytes',async()=>{
+ const bytes=new Uint8Array(100*1024*1024);bytes.set(new TextEncoder().encode('%PDF-1.4'));
+ const file=new File([bytes],'large.pdf');
+ assert.equal((await inspectFile(file,'ตรวจรับ')).mime,'application/pdf');
+ await assert.rejects(inspectFile({size:file.size+1,arrayBuffer:()=>{throw Error('must not read');}},'ตรวจรับ'),/100 MB/);
+});
