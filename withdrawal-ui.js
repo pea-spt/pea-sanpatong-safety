@@ -1,3 +1,4 @@
+import {cancelWithdrawal} from './withdrawal-cancel.js';
 import {searchSelects} from './select-search.js';
 import {documentCall,connectDrive,uploadWithdrawalFile} from './document-client.js?v=20261013-withdrawal';
 import {driveUrl} from './drive-policy.js';
@@ -5,6 +6,7 @@ import {editWithdrawalEvidence} from './withdrawal-evidence.js';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const selected=new Map(),pending=new Map(),uploading=new Set();
 const scope=c=>`${c.environment}:${c.officeId}`;
+export function selectWithdrawal(context,id){selected.set(scope(context),id);}
 export function mountWithdrawalFiles(host,onChange){
  host.innerHTML='<label>รูป / เอกสารหลักฐาน (ไม่บังคับ)<input type="file" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"></label><p class="hint">เลือกไฟล์ไว้เพื่ออัปโหลดหลังบันทึกการจ่าย หรือกลับมาแนบภายหลังได้ • สูงสุด 100 MB ต่อไฟล์</p>';
  host.querySelector('input').onchange=e=>onChange([...e.target.files]);
@@ -18,19 +20,22 @@ export async function uploadWithdrawalFiles(id,files,options){
 }
 export function mountWithdrawals(host,options){
  const {getState,context,report,save,actor,timestamp}=options;
- host.innerHTML='<section class="card"><h2>รายการเบิกจ่าย — แนบ / แก้ไขหลักฐานภายหลัง</h2><label>ค้นหารายการเบิกจ่าย<input type="search" placeholder="ชื่อผู้เบิก วันที่ หรืออุปกรณ์"></label><div class="withdrawal-list"></div><div class="withdrawal-editor"></div></section>';
+ host.innerHTML='<section class="card"><h2>รายการเบิกจ่าย — แก้ไขหลักฐาน / ยกเลิกคืนคลัง</h2><label>ค้นหารายการเบิกจ่าย<input type="search" placeholder="ชื่อผู้เบิก วันที่ หรืออุปกรณ์"></label><div class="withdrawal-list"></div><div class="withdrawal-editor"></div></section>';
  const list=host.querySelector('.withdrawal-list'),editor=host.querySelector('.withdrawal-editor');
- const draw=q=>{const rows=Object.values(getState().movements||{}).filter(m=>m.kind==='withdrawal'&&[m.personName,m.empId,m.date,...m.lines.map(l=>l.name+' '+(l.variant||''))].join(' ').includes(q)).sort((a,b)=>(b.ts||0)-(a.ts||0));list.innerHTML=rows.length?rows.map(m=>`<div class="cart"><strong>${esc(m.date)} • ${esc(m.personName||m.empId)}</strong><p>${m.lines.map(l=>`${esc(l.name)} ${esc(l.variant)} • ${l.qty} ${esc(l.unit)}`).join(' / ')}</p><p>${Object.keys(m.files||{}).length} ไฟล์</p><button type="button" data-withdrawal="${esc(m.id)}">แนบ / แก้ไขหลักฐาน</button></div>`).join(''):'<p>ไม่พบรายการเบิกจ่าย</p>';list.querySelectorAll('button').forEach(b=>b.onclick=()=>{selected.set(scope(context),b.dataset.withdrawal);open(b.dataset.withdrawal);});};
+ const draw=q=>{const rows=Object.values(getState().movements||{}).filter(m=>m.kind==='withdrawal'&&[m.personName,m.empId,m.date,...m.lines.map(l=>l.name+' '+(l.variant||''))].join(' ').includes(q)).sort((a,b)=>(b.ts||0)-(a.ts||0));list.innerHTML=rows.length?rows.map(m=>`<div class="cart"><strong>${esc(m.date)} • ${esc(m.personName||m.empId)}</strong><p>${m.lines.map(l=>`${esc(l.name)} ${esc(l.variant)} • ${l.qty} ${esc(l.unit)}`).join(' / ')}</p><p>${m.cancelledByMovement?'ยกเลิกแล้ว • คืนคลังแล้ว':'ใช้งาน'} • ${Object.keys(m.files||{}).length} ไฟล์</p><button type="button" data-withdrawal="${esc(m.id)}">เปิดใบเบิก / แก้ไข / ยกเลิก</button></div>`).join(''):'<p>ไม่พบรายการเบิกจ่าย</p>';list.querySelectorAll('button').forEach(b=>b.onclick=()=>{selected.set(scope(context),b.dataset.withdrawal);open(b.dataset.withdrawal);});};
  host.querySelector('input[type=search]').oninput=e=>draw(e.target.value);draw('');
  function open(id){
   const movement=getState().movements?.[id];if(movement?.kind!=='withdrawal')return;
   const key=scope(context)+':'+id,files=Object.values(movement.files||{}),active=files.filter(f=>!files.some(n=>n.replacesId===f.id));
   editor.innerHTML=`<h3>หลักฐานเบิกจ่าย ${esc(movement.personName)} • ${esc(movement.date)}</h3><p>รหัสรายการ ${esc(id)}</p><form class="withdrawal-edit"><label>วันที่<input name="date" type="date" required value="${esc(movement.date)}"></label><label>หมายเหตุ / เหตุผล<input name="note" value="${esc(movement.note)}"></label><label>ลิงก์หลักฐาน (ไม่บังคับ)<input name="evidence" type="url" value="${esc(movement.evidence)}"></label><button type="submit">บันทึกการแก้ไข</button></form><p class="hint">แก้วันที่ หมายเหตุ และหลักฐานได้ โดยยอดจ่ายและยอดคลังไม่เปลี่ยน</p>${files.map(f=>`<p><a target="_blank" rel="noopener noreferrer" href="${driveUrl(f.driveFileId)}">${esc(f.name)}</a> ${active.includes(f)?'':'(รุ่นเก่า)'}</p>`).join('')}<div class="withdrawal-file-input"></div><label>การแนบไฟล์<select class="replace-file"><option value="">เพิ่มหลักฐานใหม่</option>${active.map(f=>`<option value="${esc(f.id)}">แนบรุ่นใหม่แทน ${esc(f.name)}</option>`).join('')}</select></label><p class="pending-files"></p><button type="button" class="withdrawal-upload">เชื่อม Drive / อัปโหลดหลักฐาน</button><p class="upload-status" role="status"></p>`;
+  const cancellation=document.createElement('section');editor.prepend(cancellation);
+  cancellation.innerHTML=movement.cancelledByMovement?'<p class="hint">ยกเลิกแล้วและคืนยอดเข้าคลังแล้ว</p>':`<h3>ยกเลิกใบเบิกและคืนคลัง</h3><p>คืนทั้งหมด: ${movement.lines.map(l=>esc(l.name)+' '+esc(l.variant)+' • '+(-l.delta)+' '+esc(l.unit)).join(' / ')}</p><form><label>เหตุผลยกเลิก<input name="reason" required></label><button type="submit">ยกเลิกใบเบิก / คืนคลังทั้งหมด</button></form><p class="hint">คืนคลังครั้งเดียว เก็บต้นฉบับและประวัติยกเลิกไว้ตรวจสอบ หากต้องการเบิกใหม่ให้สร้างรายการใหม่</p>`;
+  const cancelForm=cancellation.querySelector('form');if(cancelForm)cancelForm.onsubmit=e=>{e.preventDefault();const reason=new FormData(cancelForm).get('reason');if(!confirm('ยืนยันยกเลิกใบเบิกของ '+(movement.personName||movement.empId)+' และคืนอุปกรณ์ทั้งหมดเข้าคลัง?'))return;const change={id:crypto.randomUUID(),reason};save(s=>cancelWithdrawal(s,id,change,actor,timestamp()));};
   searchSelects(editor,'select.replace-file');
   const status=editor.querySelector('.upload-status'),upload=editor.querySelector('.withdrawal-upload'),fileHost=editor.querySelector('.withdrawal-file-input');
   const showPending=()=>{editor.querySelector('.pending-files').textContent=(pending.get(key)||[]).map(f=>f.name).join(' • ');upload.disabled=uploading.has(key);fileHost.querySelector('input').disabled=uploading.has(key);editor.querySelector('.replace-file').disabled=uploading.has(key);};
   mountWithdrawalFiles(fileHost,files=>{pending.set(key,files);showPending();});showPending();
-  editor.querySelector('form').onsubmit=e=>{e.preventDefault();const values={...Object.fromEntries(new FormData(e.target)),id:crypto.randomUUID(),expectedVersion:movement.evidenceVersion||0};save(s=>editWithdrawalEvidence(s,id,values,actor,timestamp()));};
+  editor.querySelector('form.withdrawal-edit').onsubmit=e=>{e.preventDefault();const values={...Object.fromEntries(new FormData(e.target)),id:crypto.randomUUID(),expectedVersion:movement.evidenceVersion||0};save(s=>editWithdrawalEvidence(s,id,values,actor,timestamp()));};
   upload.onclick=async()=>{
    const chosen=[...(pending.get(key)||[])],replacesId=editor.querySelector('.replace-file').value;
    if(!chosen.length){report('เลือกไฟล์หลักฐานก่อน',true);return;}if(replacesId&&chosen.length!==1){report('แนบไฟล์รุ่นใหม่ครั้งละหนึ่งไฟล์',true);return;}

@@ -1,6 +1,6 @@
 export const stockZones=['ศีรษะ','ใบหน้า / ตา / หายใจ','ลำตัว / กันตก','มือ','เท้า / ปีนเสา','พื้นที่ทำงาน'];
 export function stockRows(state,{query='',onlyLow=false}={}){
- const sums={};for(const m of Object.values(state.movements||{}))for(const l of m.lines||[]){const x=sums[l.itemId]||={received:0,issued:0,adjusted:0,expected:0};x.expected+=l.delta;if(m.kind==='receipt')x.received+=l.delta;else if(m.kind==='withdrawal')x.issued-=l.delta;else if(m.receiptId)x.received+=l.delta;else x.adjusted+=l.delta;}
+ const sums={};for(const m of Object.values(state.movements||{}))for(const l of m.lines||[]){const x=sums[l.itemId]||={received:0,issued:0,adjusted:0,expected:0};x.expected+=l.delta;if(m.kind==='receipt')x.received+=l.delta;else if(m.kind==='withdrawal')x.issued-=l.delta;else if(m.withdrawalId)x.issued-=l.delta;else if(m.receiptId)x.received+=l.delta;else x.adjusted+=l.delta;}
  const words=query.toLocaleLowerCase('th').trim().split(/\s+/).filter(Boolean);
  return Object.entries(state.items||{}).filter(([,x])=>x.active).map(([id,x])=>({id,...x,...(sums[id]||{received:0,issued:0,adjusted:0,expected:0})})).filter(x=>(!onlyLow||x.qty<=x.minimum)&&words.every(w=>[x.name,x.variant,x.zone].join(' ').toLocaleLowerCase('th').includes(w))).sort((a,b)=>a.name.localeCompare(b.name,'th')||(a.variant||'').localeCompare(b.variant||'','th'));
 }
