@@ -27,3 +27,12 @@ code,.stat strong,input[type=number]{font-family:'Roboto Mono',monospace;font-va
 .inventory-disclosure{margin:14px 0;border:1px solid #dbe3eb;border-radius:12px;background:#fff}.inventory-disclosure>summary{cursor:pointer;padding:16px 18px;font-weight:600;color:#263c58}.inventory-disclosure>summary span{font-size:12px;font-weight:400;color:#65758a;margin-left:10px}.inventory-disclosure[open]>summary{border-bottom:1px solid #e2e8f0}.inventory-disclosure>.inventory-section{border:0;margin:0;border-radius:0 0 12px 12px}.inventory-disclosure>summary:focus-visible{outline:3px solid #9171ba;outline-offset:3px;border-radius:10px}@media(max-width:480px){.inventory-disclosure>summary span{display:block;margin:4px 0 0 16px}}
 
 .inventory-percent-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}.inventory-column-chart{display:flex;flex-direction:column;align-items:center;gap:8px;margin:12px 0}.inventory-column-chart>strong{font-size:22px;color:#a85d14}.inventory-column-track{height:140px;width:52px;background:#edf1f6;border:1px solid #dce5ee;border-radius:8px;overflow:hidden;display:flex;align-items:flex-end}.inventory-column-track i{display:block;width:100%;background:#d17a23}.inventory-column-chart>span{font-size:12px;color:#526176}.inventory-cumulative{font-size:13px;line-height:1.8}.inventory-percent-grid .inventory-percent,.inventory-percent-grid .inventory-balance{font-size:12px}@media(max-width:480px){.inventory-percent-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.inventory-percent-grid .inventory-item-card{padding:10px}.inventory-percent-grid .inventory-label{font-size:14px}.inventory-percent-grid .inventory-label small{font-size:11px}}
+/* Share six content rows across adjacent cards so long names keep chart and totals aligned. */
+.inventory-percent-grid{column-gap:14px;row-gap:0}
+.inventory-percent-grid>.inventory-item-card{display:grid;grid-template-rows:subgrid;grid-row:span 6;row-gap:0;margin-bottom:14px;align-items:start}
+.inventory-percent-grid .inventory-rank{justify-self:start;align-self:start}
+.inventory-percent-grid .inventory-label{min-height:0;margin:0}
+.inventory-percent-grid .inventory-column-chart{align-self:start}
+.inventory-percent-grid .inventory-cumulative{align-self:start}
+.inventory-percent-grid .inventory-percent,.inventory-percent-grid .inventory-balance{align-self:start}
+@media(max-width:480px){.inventory-percent-grid{column-gap:8px}.inventory-percent-grid>.inventory-item-card{margin-bottom:8px}}
