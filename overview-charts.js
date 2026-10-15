@@ -8,7 +8,7 @@ export function overviewModel(lines){
   const personOfficeId=l.personOfficeId||l.officeId,key=JSON.stringify([personOfficeId,l.personId||l.empId||l.person]);
   if(!people.has(key))people.set(key,{key,personId:l.personId,person:l.person,empId:l.empId,personOfficeId,personOffice:l.personOffice||l.office,position:l.position,date:l.date,ts:l.ts,bills:new Set(),items:new Map()});
   const p=people.get(key);p.bills.add(JSON.stringify([l.officeId,l.id]));
-  const itemKey=JSON.stringify([l.officeId,l.itemId||l.item,l.variant||'',l.unit||'']);
+  const itemKey=JSON.stringify([l.officeId,l.itemId||JSON.stringify([l.item,l.variant||'',l.unit||''])]);
   if(!p.items.has(itemKey))p.items.set(itemKey,{officeId:l.officeId,office:l.office,itemId:l.itemId,item:l.item,variant:l.variant||'',unit:l.unit||'ไม่ระบุหน่วย',qty:0});
   p.items.get(itemKey).qty+=l.qty;
  }

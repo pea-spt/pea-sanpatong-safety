@@ -4,7 +4,7 @@ import {overviewModel,overviewCharts} from '../overview-charts.js';
 import {filterLines} from '../meeting.js';
 const line={officeId:'sanpatong',office:'สันป่าตอง',personId:'p',person:'ชื่อเดียวกัน',position:'ช่าง',empId:'',id:'w',date:'2026-01-02',ts:1,itemId:'hat',item:'หมวก',variant:'ขาว',zone:'ศีรษะ',unit:'ใบ',qty:3};
 test('recipient summaries keep equipment, variants and issuing stockrooms separate',()=>{
- const m=overviewModel([line,{...line,id:'w2',qty:2},{...line,itemId:'mask',item:'หน้ากาก',qty:4},{...line,variant:'ฟ้า',qty:1},{...line,personOfficeId:'sanpatong',officeId:'maewang',office:'แม่วาง',qty:6}]);
+ const m=overviewModel([line,{...line,id:'w2',qty:2},{...line,itemId:'mask',item:'หน้ากาก',qty:4},{...line,itemId:'blue-hat',variant:'ฟ้า',qty:1},{...line,personOfficeId:'sanpatong',officeId:'maewang',office:'แม่วาง',qty:6}]);
  assert.equal(m.recipients.length,1);const p=m.recipients[0];assert.equal(p.bills,3);assert.equal(p.items.length,4);
  assert.deepEqual(p.items.map(i=>i.qty),[5,4,1,6]);
  assert.ok(!('units' in p));
@@ -26,3 +26,5 @@ test('filters affect per-person quantities and output has no graphs or unsafe ma
  assert.ok(!html.includes('<img src=x'));assert.ok(!html.includes('<script>'));assert.ok(!html.includes('<svg'));assert.ok(!html.includes('overview-bar'));assert.ok(!html.includes('overview-month'));
  assert.ok(html.includes('จ่ายจาก สันป่าตอง'));assert.ok(html.includes('2026-01-02'));
 });
+
+test('recipient equipment with the same SKU combines after variant correction; other SKU stays distinct',()=>{const m=overviewModel([{...line,variant:'ยังไม่ระบุไซส์',date:'2026-01-01',qty:1},{...line,variant:'ไซส์ 47',date:'2026-02-01',qty:2},{...line,itemId:'another',variant:'ไซส์ 47',qty:5}]);assert.equal(m.recipients[0].items.length,2);assert.equal(m.recipients[0].items.find(x=>x.itemId==='hat').qty,3);assert.equal(m.recipients[0].items.find(x=>x.itemId==='hat').variant,'ไซส์ 47');});

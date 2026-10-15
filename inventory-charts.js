@@ -18,10 +18,10 @@ export function inventoryModel(snapshots,offices,filters={}){
    else continue;
    if(!validDate(view.date)||(to&&view.date>to))continue;
    for(const l of view.lines||[]){
-    const item=s.items?.[l.itemId]||{},name=l.name||item.name||'ไม่ระบุอุปกรณ์',variant=l.variant??item.variant??'',unit=l.unit||item.unit||'ไม่ระบุหน่วย';
+    const item=s.items?.[l.itemId]||{},name=item.name||l.name||'ไม่ระบุอุปกรณ์',variant=item.variant??l.variant??'',unit=item.unit||l.unit||'ไม่ระบุหน่วย';
     if(filters.item&&filters.item!==name)continue;
     const zone=item.zone||l.zone||'ไม่ระบุหมวด';
-    const key=JSON.stringify([o.id,l.itemId,variant,unit]);
+    const key=JSON.stringify([o.id,l.itemId]);
     if(!rows.has(key))rows.set(key,{key,officeId:o.id,office:o.name,itemId:l.itemId,name,variant,unit,zone,received:0,issued:0,adjusted:0,cumulativeReceived:0,cumulativeIssued:0,cumulativeAdjusted:0,opening:0});
     const r=rows.get(key),qty=kind==='adjustment'?l.delta:(l.qty??(kind==='withdrawal'?-l.delta:l.delta));
     if(!Number.isFinite(qty))continue;
