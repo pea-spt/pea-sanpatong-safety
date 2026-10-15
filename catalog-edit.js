@@ -1,8 +1,9 @@
+import {parsePersonType} from './person-type.js';
 export function editPerson(current,id,values,expected){
  const s=structuredClone(current),p=s.people?.[id];if(!p)throw Error('ไม่พบบุคลากร');
  if(JSON.stringify(p)!==JSON.stringify(expected))throw Error('ข้อมูลเปลี่ยนแล้ว กรุณาเปิดฟอร์มใหม่');
  const fullName=values.fullName.trim();if(!fullName)throw Error('กรุณาระบุชื่อ');
- s.people[id]={...p,fullName,position:values.position.trim(),department:values.department.trim()};return s;
+ s.people[id]={...p,fullName,personType:parsePersonType(values.personType??p.personType),position:values.position.trim(),department:values.department.trim()};return s;
 }
 export function editItem(current,id,values,expected){
  const s=structuredClone(current),x=s.items?.[id];if(!x)throw Error('ไม่พบอุปกรณ์');
