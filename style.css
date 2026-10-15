@@ -47,3 +47,8 @@ code,.stat strong,input[type=number]{font-family:'Roboto Mono',monospace;font-va
 .inventory-percent-grid .inventory-cumulative{margin:0;line-height:24px}
 .inventory-percent-grid .inventory-percent{margin:8px 0 0;line-height:20px}
 .inventory-percent-grid .inventory-balance{margin:8px 0 0}
+
+/* Keep withdrawal actions visible while browsing wide history details. */
+#history-table th:first-child,#history-table td:first-child{position:sticky;left:0;z-index:1;background:#fff;border-right:1px solid #e8e3ed;box-shadow:3px 0 5px #24203308}
+#history-table th:first-child{z-index:2}
+#history-table td:first-child button{white-space:nowrap}
