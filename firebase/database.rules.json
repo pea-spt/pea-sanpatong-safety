@@ -23,7 +23,7 @@
       },
       "movements": {
         "$id": {
-          ".validate": "newData.hasChildren(['id','kind','by','byEmail','ts','date','lines']) && newData.child('id').val() === $id && (newData.child('kind').val() === 'receipt' || newData.child('kind').val() === 'withdrawal' || newData.child('kind').val() === 'adjustment') && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now))"
+          ".validate": "newData.hasChildren(['id','kind','by','byEmail','ts','date','lines']) && newData.child('id').val() === $id && (newData.child('kind').val() === 'receipt' || newData.child('kind').val() === 'withdrawal' || newData.child('kind').val() === 'adjustment') && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now)) && (newData.child('kind').val() !== 'withdrawal' || (data.exists() && newData.child('personId').val() === data.child('personId').val() && newData.child('personOfficeId').val() === data.child('personOfficeId').val() && newData.child('personName').val() === data.child('personName').val() && newData.child('empId').val() === data.child('empId').val()) || (((newData.child('personOfficeId').val() === 'sanpatong' || !newData.hasChild('personOfficeId')) && root.child('office/people').child(newData.child('personId').val()).child('active').val() === true && (!root.child('office/people').child(newData.child('personId').val()).hasChild('employmentStatus') || root.child('office/people').child(newData.child('personId').val()).child('employmentStatus').val() === 'active') && newData.child('personName').val() === root.child('office/people').child(newData.child('personId').val()).child('fullName').val() && newData.child('empId').val() === root.child('office/people').child(newData.child('personId').val()).child('empId').val()) || ((newData.child('personOfficeId').val() === 'maewang') && root.child('offices/maewang/people').child(newData.child('personId').val()).child('active').val() === true && (!root.child('offices/maewang/people').child(newData.child('personId').val()).hasChild('employmentStatus') || root.child('offices/maewang/people').child(newData.child('personId').val()).child('employmentStatus').val() === 'active') && newData.child('personName').val() === root.child('offices/maewang/people').child(newData.child('personId').val()).child('fullName').val() && newData.child('empId').val() === root.child('offices/maewang/people').child(newData.child('personId').val()).child('empId').val())))"
         }
       },
       "catalog": {
@@ -104,7 +104,8 @@
       "people": {
         "$id": {
           ".validate": "newData.hasChildren(['empId','fullName','active']) && newData.child('empId').isString() && newData.child('fullName').isString() && newData.child('active').isBoolean() && (!newData.hasChild('employmentStatus') || ((newData.child('employmentStatus').val() === 'active' && newData.child('active').val() === true && !newData.hasChild('transferMonth')) || (newData.child('employmentStatus').val() === 'inactive' && newData.child('active').val() === false && !newData.hasChild('transferMonth')) || (newData.child('employmentStatus').val() === 'transferred' && newData.child('active').val() === false && newData.child('transferMonth').isString() && newData.child('transferMonth').val().matches(/^(19|[2-9][0-9])[0-9]{2}-(0[1-9]|1[0-2])$/))))"
-        }
+        },
+        ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('admins').child(auth.uid).child('sanpatong').val() === true || root.child('admins').child(auth.uid).child('maewang').val() === true)"
       }
     },
     "offices": {
@@ -121,7 +122,7 @@
         },
         "movements": {
           "$id": {
-            ".validate": "newData.hasChildren(['id','kind','by','byEmail','ts','date','lines']) && newData.child('id').val() === $id && (newData.child('kind').val() === 'receipt' || newData.child('kind').val() === 'withdrawal' || newData.child('kind').val() === 'adjustment') && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now))"
+            ".validate": "newData.hasChildren(['id','kind','by','byEmail','ts','date','lines']) && newData.child('id').val() === $id && (newData.child('kind').val() === 'receipt' || newData.child('kind').val() === 'withdrawal' || newData.child('kind').val() === 'adjustment') && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now)) && (newData.child('kind').val() !== 'withdrawal' || (data.exists() && newData.child('personId').val() === data.child('personId').val() && newData.child('personOfficeId').val() === data.child('personOfficeId').val() && newData.child('personName').val() === data.child('personName').val() && newData.child('empId').val() === data.child('empId').val()) || (((newData.child('personOfficeId').val() === 'sanpatong') && root.child('office/people').child(newData.child('personId').val()).child('active').val() === true && (!root.child('office/people').child(newData.child('personId').val()).hasChild('employmentStatus') || root.child('office/people').child(newData.child('personId').val()).child('employmentStatus').val() === 'active') && newData.child('personName').val() === root.child('office/people').child(newData.child('personId').val()).child('fullName').val() && newData.child('empId').val() === root.child('office/people').child(newData.child('personId').val()).child('empId').val()) || ((newData.child('personOfficeId').val() === 'maewang' || !newData.hasChild('personOfficeId')) && root.child('offices/maewang/people').child(newData.child('personId').val()).child('active').val() === true && (!root.child('offices/maewang/people').child(newData.child('personId').val()).hasChild('employmentStatus') || root.child('offices/maewang/people').child(newData.child('personId').val()).child('employmentStatus').val() === 'active') && newData.child('personName').val() === root.child('offices/maewang/people').child(newData.child('personId').val()).child('fullName').val() && newData.child('empId').val() === root.child('offices/maewang/people').child(newData.child('personId').val()).child('empId').val())))"
           }
         },
         "catalog": {
@@ -202,7 +203,8 @@
         "people": {
           "$id": {
             ".validate": "newData.hasChildren(['empId','fullName','active']) && newData.child('empId').isString() && newData.child('fullName').isString() && newData.child('active').isBoolean() && (!newData.hasChild('employmentStatus') || ((newData.child('employmentStatus').val() === 'active' && newData.child('active').val() === true && !newData.hasChild('transferMonth')) || (newData.child('employmentStatus').val() === 'inactive' && newData.child('active').val() === false && !newData.hasChild('transferMonth')) || (newData.child('employmentStatus').val() === 'transferred' && newData.child('active').val() === false && newData.child('transferMonth').isString() && newData.child('transferMonth').val().matches(/^(19|[2-9][0-9])[0-9]{2}-(0[1-9]|1[0-2])$/))))"
-          }
+          },
+          ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('admins').child(auth.uid).child('sanpatong').val() === true || root.child('admins').child(auth.uid).child('maewang').val() === true)"
         }
       }
     },
@@ -220,7 +222,7 @@
         },
         "movements": {
           "$id": {
-            ".validate": "newData.hasChildren(['id','kind','by','byEmail','ts','date','lines']) && newData.child('id').val() === $id && (newData.child('kind').val() === 'receipt' || newData.child('kind').val() === 'withdrawal' || newData.child('kind').val() === 'adjustment') && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now))"
+            ".validate": "newData.hasChildren(['id','kind','by','byEmail','ts','date','lines']) && newData.child('id').val() === $id && (newData.child('kind').val() === 'receipt' || newData.child('kind').val() === 'withdrawal' || newData.child('kind').val() === 'adjustment') && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now)) && (newData.child('kind').val() !== 'withdrawal' || (data.exists() && newData.child('personId').val() === data.child('personId').val() && newData.child('personOfficeId').val() === data.child('personOfficeId').val() && newData.child('personName').val() === data.child('personName').val() && newData.child('empId').val() === data.child('empId').val()) || (((newData.child('personOfficeId').val() === 'sanpatong' || !newData.hasChild('personOfficeId')) && root.child('qa/office/people').child(newData.child('personId').val()).child('active').val() === true && (!root.child('qa/office/people').child(newData.child('personId').val()).hasChild('employmentStatus') || root.child('qa/office/people').child(newData.child('personId').val()).child('employmentStatus').val() === 'active') && newData.child('personName').val() === root.child('qa/office/people').child(newData.child('personId').val()).child('fullName').val() && newData.child('empId').val() === root.child('qa/office/people').child(newData.child('personId').val()).child('empId').val()) || ((newData.child('personOfficeId').val() === 'maewang') && root.child('qa/offices/maewang/people').child(newData.child('personId').val()).child('active').val() === true && (!root.child('qa/offices/maewang/people').child(newData.child('personId').val()).hasChild('employmentStatus') || root.child('qa/offices/maewang/people').child(newData.child('personId').val()).child('employmentStatus').val() === 'active') && newData.child('personName').val() === root.child('qa/offices/maewang/people').child(newData.child('personId').val()).child('fullName').val() && newData.child('empId').val() === root.child('qa/offices/maewang/people').child(newData.child('personId').val()).child('empId').val())))"
           }
         },
         "catalog": {
@@ -301,7 +303,8 @@
         "people": {
           "$id": {
             ".validate": "newData.hasChildren(['empId','fullName','active']) && newData.child('empId').isString() && newData.child('fullName').isString() && newData.child('active').isBoolean() && (!newData.hasChild('employmentStatus') || ((newData.child('employmentStatus').val() === 'active' && newData.child('active').val() === true && !newData.hasChild('transferMonth')) || (newData.child('employmentStatus').val() === 'inactive' && newData.child('active').val() === false && !newData.hasChild('transferMonth')) || (newData.child('employmentStatus').val() === 'transferred' && newData.child('active').val() === false && newData.child('transferMonth').isString() && newData.child('transferMonth').val().matches(/^(19|[2-9][0-9])[0-9]{2}-(0[1-9]|1[0-2])$/))))"
-          }
+          },
+          ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('admins').child(auth.uid).child('sanpatong').val() === true || root.child('admins').child(auth.uid).child('maewang').val() === true)"
         }
       },
       "offices": {
@@ -318,7 +321,7 @@
           },
           "movements": {
             "$id": {
-              ".validate": "newData.hasChildren(['id','kind','by','byEmail','ts','date','lines']) && newData.child('id').val() === $id && (newData.child('kind').val() === 'receipt' || newData.child('kind').val() === 'withdrawal' || newData.child('kind').val() === 'adjustment') && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now))"
+              ".validate": "newData.hasChildren(['id','kind','by','byEmail','ts','date','lines']) && newData.child('id').val() === $id && (newData.child('kind').val() === 'receipt' || newData.child('kind').val() === 'withdrawal' || newData.child('kind').val() === 'adjustment') && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now)) && (newData.child('kind').val() !== 'withdrawal' || (data.exists() && newData.child('personId').val() === data.child('personId').val() && newData.child('personOfficeId').val() === data.child('personOfficeId').val() && newData.child('personName').val() === data.child('personName').val() && newData.child('empId').val() === data.child('empId').val()) || (((newData.child('personOfficeId').val() === 'sanpatong') && root.child('qa/office/people').child(newData.child('personId').val()).child('active').val() === true && (!root.child('qa/office/people').child(newData.child('personId').val()).hasChild('employmentStatus') || root.child('qa/office/people').child(newData.child('personId').val()).child('employmentStatus').val() === 'active') && newData.child('personName').val() === root.child('qa/office/people').child(newData.child('personId').val()).child('fullName').val() && newData.child('empId').val() === root.child('qa/office/people').child(newData.child('personId').val()).child('empId').val()) || ((newData.child('personOfficeId').val() === 'maewang' || !newData.hasChild('personOfficeId')) && root.child('qa/offices/maewang/people').child(newData.child('personId').val()).child('active').val() === true && (!root.child('qa/offices/maewang/people').child(newData.child('personId').val()).hasChild('employmentStatus') || root.child('qa/offices/maewang/people').child(newData.child('personId').val()).child('employmentStatus').val() === 'active') && newData.child('personName').val() === root.child('qa/offices/maewang/people').child(newData.child('personId').val()).child('fullName').val() && newData.child('empId').val() === root.child('qa/offices/maewang/people').child(newData.child('personId').val()).child('empId').val())))"
             }
           },
           "catalog": {
@@ -399,7 +402,8 @@
           "people": {
             "$id": {
               ".validate": "newData.hasChildren(['empId','fullName','active']) && newData.child('empId').isString() && newData.child('fullName').isString() && newData.child('active').isBoolean() && (!newData.hasChild('employmentStatus') || ((newData.child('employmentStatus').val() === 'active' && newData.child('active').val() === true && !newData.hasChild('transferMonth')) || (newData.child('employmentStatus').val() === 'inactive' && newData.child('active').val() === false && !newData.hasChild('transferMonth')) || (newData.child('employmentStatus').val() === 'transferred' && newData.child('active').val() === false && newData.child('transferMonth').isString() && newData.child('transferMonth').val().matches(/^(19|[2-9][0-9])[0-9]{2}-(0[1-9]|1[0-2])$/))))"
-            }
+            },
+            ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('admins').child(auth.uid).child('sanpatong').val() === true || root.child('admins').child(auth.uid).child('maewang').val() === true)"
           }
         }
       }
