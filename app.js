@@ -1,4 +1,4 @@
-import {historyRows} from './history-view.js?v=20261015-bill-history';
+import {historyRows} from './history-view.js?v=20261015-bill-history-confirm';
 import {personTypes,personType,parsePersonType,personTypeField} from './person-type.js';
 import {inventoryCharts} from './inventory-charts.js?v=20261015-chart-baseline-v2';
 import {recipientOptions,parseRecipient} from './recipients.js';
@@ -8,7 +8,7 @@ import {isCurrentPerson,personStatus,changePersonStatus,transferLabel} from './p
 import {mountStock} from './stock-view.js';
 import {mountProcurements,mountMeetingDocuments,openFolder} from './procurement-ui.js?v=20261013-search';
 import {configureDocuments,resetDrive} from './document-client.js?v=20261013-withdrawal';
-import {mountWithdrawalFiles,mountWithdrawals,uploadWithdrawalFiles,selectWithdrawal} from './withdrawal-ui.js?v=20261015-bill-history';
+import {mountWithdrawalFiles,mountWithdrawals,uploadWithdrawalFiles,selectWithdrawal} from './withdrawal-ui.js?v=20261015-bill-history-confirm';
 function officePath(id,environment){if(!['sanpatong','maewang'].includes(id)||!['live','qa'].includes(environment))throw Error('หน่วยงานไม่ถูกต้อง');return (environment==='qa'?'qa/':'')+(id==='sanpatong'?'office':'offices/maewang');}
 import {linkReceipt} from './procurement.js';
 import {mountReceipts} from './receipt-ui.js?v=20261013-search';
