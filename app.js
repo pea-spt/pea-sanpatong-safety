@@ -1,4 +1,4 @@
-import {inventoryCharts} from './inventory-charts.js?v=20261015-categorycards';
+import {inventoryCharts} from './inventory-charts.js?v=20261015-chartfold';
 import {recipientOptions,parseRecipient} from './recipients.js';
 import {overviewCharts,overviewStats} from './overview-charts.js?v=20261015-people';
 import {searchSelects} from './select-search.js';
