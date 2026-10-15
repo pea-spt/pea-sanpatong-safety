@@ -36,3 +36,9 @@ code,.stat strong,input[type=number]{font-family:'Roboto Mono',monospace;font-va
 .inventory-percent-grid .inventory-cumulative{align-self:start}
 .inventory-percent-grid .inventory-percent,.inventory-percent-grid .inventory-balance{align-self:start}
 @media(max-width:480px){.inventory-percent-grid{column-gap:8px}.inventory-percent-grid>.inventory-item-card{margin-bottom:8px}}
+/* Align every inventory category, including receipt and issue ranking cards. */
+.inventory-card-grid:not(.inventory-percent-grid){row-gap:0}
+.inventory-card-grid:not(.inventory-percent-grid)>.inventory-item-card{display:grid;grid-template-rows:subgrid;grid-row:span 4;row-gap:0;align-items:start;margin-bottom:14px}
+.inventory-card-grid:not(.inventory-percent-grid) .inventory-rank{justify-self:start;align-self:start}
+.inventory-card-grid:not(.inventory-percent-grid) .inventory-label{min-height:0;margin:0}
+.inventory-card-grid:not(.inventory-percent-grid) .inventory-bar-row,.inventory-card-grid:not(.inventory-percent-grid) .inventory-percent{align-self:start}
