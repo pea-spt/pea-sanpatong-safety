@@ -61,6 +61,8 @@ export function mountWithdrawals(host,options){
    form.oninput=preview;drawLines();
    form.onsubmit=e=>{e.preventDefault();const lines=read(),reason=new FormData(form).get('reason');if(!confirm(form.querySelector('.return-preview').textContent+'\nยืนยันแก้รายการในใบเบิกนี้?'))return;const change={id:crypto.randomUUID(),reason,lines,expectedVersion:view.version};save(s=>reviseWithdrawal(s,id,change,actor,timestamp()));};
   }
+  const revisions=Object.values(getState().movements||{}).filter(m=>m.withdrawalId===id).sort((a,b)=>(a.withdrawalVersion||0)-(b.withdrawalVersion||0));
+  if(revisions.length){const audit=document.createElement('details');audit.className='withdrawal-quantity-history';audit.innerHTML='<summary>ประวัติแก้รายการ ('+revisions.length+')</summary>'+revisions.map(m=>`<p><strong>ครั้งที่ ${esc(m.withdrawalVersion)}</strong> • ${esc(m.note)}<br>${m.lines.map(l=>`${esc(l.name)} ${esc(l.variant)}: ${l.delta>0?'คืนคลัง':'เบิกเพิ่ม'} ${Math.abs(l.delta)} ${esc(l.unit)}`).join('<br>')}<br><small>ผู้บันทึก: ${esc(m.byEmail)}</small></p>`).join('');editor.append(audit);}
   searchSelects(editor,'select.replace-file,select[name=personId]');
   const status=editor.querySelector('.upload-status'),upload=editor.querySelector('.withdrawal-upload'),fileHost=editor.querySelector('.withdrawal-file-input');
   const showPending=()=>{editor.querySelector('.pending-files').textContent=(pending.get(key)||[]).map(f=>f.name).join(' • ');upload.disabled=uploading.has(key);fileHost.querySelector('input').disabled=uploading.has(key);editor.querySelector('.replace-file').disabled=uploading.has(key);};
