@@ -1,0 +1,43 @@
+import {receiptView} from './receipt-edit.js';
+import {withdrawalView} from './withdrawal-cancel.js';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const validDate=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&Number.isFinite(Date.parse(s))&&new Date(s).toISOString().slice(0,10)===s;
+const num=n=>Number(n).toLocaleString('th-TH',{maximumFractionDigits:1});
+export function inventoryModel(snapshots,offices,filters={}){
+ const rows=new Map(),from=validDate(filters.from)?filters.from:'',to=validDate(filters.to)?filters.to:'';
+ if(from&&to&&from>to)throw Error('วันที่เริ่มต้นต้องไม่เกินวันที่สิ้นสุด');
+ for(const o of offices){
+  if(filters.office&&filters.office!==o.id)continue;
+  const s=snapshots[o.id]||{};
+  for(const [id,m] of Object.entries(s.movements||{})){
+   let view,kind=m.kind;
+   if(kind==='receipt')view=receiptView(s,id);
+   else if(kind==='withdrawal')view=withdrawalView(s,id);
+   else if(kind==='adjustment'&&!m.receiptId&&!m.withdrawalId)view=m;
+   else continue;
+   if(!validDate(view.date)||(to&&view.date>to))continue;
+   for(const l of view.lines||[]){
+    const item=s.items?.[l.itemId]||{},name=l.name||item.name||'ไม่ระบุอุปกรณ์',variant=l.variant??item.variant??'',unit=l.unit||item.unit||'ไม่ระบุหน่วย';
+    if(filters.item&&filters.item!==name)continue;
+    const key=JSON.stringify([o.id,l.itemId,variant,unit]);
+    if(!rows.has(key))rows.set(key,{key,officeId:o.id,office:o.name,itemId:l.itemId,name,variant,unit,received:0,issued:0,adjusted:0,cumulativeReceived:0,cumulativeIssued:0,cumulativeAdjusted:0,opening:0});
+    const r=rows.get(key),qty=kind==='adjustment'?l.delta:(l.qty??(kind==='withdrawal'?-l.delta:l.delta));
+    if(!Number.isFinite(qty))continue;
+    const field=kind==='receipt'?'Received':kind==='withdrawal'?'Issued':'Adjusted',delta=kind==='withdrawal'?-qty:qty;
+    r['cumulative'+field]+=qty;
+    if(from&&view.date<from)r.opening+=delta;else r[field.toLowerCase()]+=qty;
+   }
+  }
+ }
+ const items=[...rows.values()].map(r=>({...r,remaining:r.cumulativeReceived-r.cumulativeIssued+r.cumulativeAdjusted,percent:r.cumulativeReceived>0?100*r.cumulativeIssued/r.cumulativeReceived:null}));
+ const rank=field=>(a,b)=>b[field]-a[field]||a.name.localeCompare(b.name,'th')||a.key.localeCompare(b.key);
+ const groups=[...new Set(items.map(r=>r.unit))].sort((a,b)=>a.localeCompare(b,'th')).map(unit=>{const entries=items.filter(r=>r.unit===unit);return {unit,received:entries.filter(r=>r.received>0).sort(rank('received')).slice(0,10),issued:entries.filter(r=>r.issued>0).sort(rank('issued')).slice(0,10),comparison:entries.filter(r=>r.received||r.issued||r.adjusted||r.opening).sort((a,b)=>b.issued-a.issued||b.received-a.received||a.name.localeCompare(b.name,'th')||a.key.localeCompare(b.key)).slice(0,10)};});
+ return {items,groups,from,to};
+}
+export function inventoryCharts(snapshots,offices,filters={}){
+ const model=inventoryModel(snapshots,offices,filters);
+ const percent=r=>r.percent===null?'คำนวณ % ไม่ได้: ไม่มีรับเข้าสะสม':`เบิกสะสม ${num(r.percent)}% ของรับเข้าสะสม${r.percent>100?' • เบิกเกินรับเข้า มีผลจากยอดปรับตรวจนับ':''}`;
+ function section(title,field,paired=false){return `<section class="inventory-section"><h3>${title}</h3>${model.groups.map(g=>{const rows=g[field];if(!rows.length)return '';const max=Math.max(1,...rows.flatMap(r=>paired?[r.received,r.issued]:[r[field]]));return `<div class="inventory-unit"><h4>หน่วย: ${esc(g.unit)} · สูงสุด 10 รายการ</h4><ol>${rows.map(r=>`<li><div class="inventory-label"><strong>${esc(r.name)}</strong> ${esc(r.variant)}<small>${esc(r.office)}</small></div>${(paired?['received','issued']:[field]).map(f=>`<div class="inventory-bar-row"><span>${f==='received'?'รับเข้า':'เบิกสุทธิ'}</span><div class="inventory-track"><i class="inventory-fill inventory-${f}" style="width:${Math.max(0,100*r[f]/max)}%"></i></div><b>${num(r[f])} ${esc(r.unit)}</b></div>`).join('')}<p class="inventory-percent">${esc(percent(r))}</p>${paired?`<p class="inventory-balance">คงเหลือ ณ สิ้นช่วง ${num(r.remaining)} ${esc(r.unit)} · ยอดต้นช่วง ${num(r.opening)} · ปรับตรวจนับในช่วง ${num(r.adjusted)}</p>`:''}</li>`).join('')}</ol></div>`;}).join('')||'<p class="overview-empty">ไม่มีข้อมูลในช่วงที่เลือก</p>'}</section>`;}
+ return `<div class="inventory-charts"><div class="overview-heading"><h2>รับเข้าและเบิกจ่ายรายอุปกรณ์</h2><span>แยกคลัง สี/ไซส์ และหน่วยนับ</span></div><p class="inventory-basis">แท่งกราฟแสดงจำนวนในช่วงที่เลือก · เปอร์เซ็นต์ = เบิกสุทธิสะสม ÷ รับเข้าสะสม ตั้งแต่เริ่มบันทึกถึง ${esc(model.to||'วันที่ล่าสุด')} × 100 (ไม่ตัดตามวันเริ่มช่วง) · รับเข้าเพิ่มแล้วเปอร์เซ็นต์ลดลงเมื่อยอดเบิกเท่าเดิม · ใช้ยอดหลังแก้ไขและยกเลิก · ตัวกรองชื่อผู้เบิกและรหัสพนักงานใช้กับรายชื่อผู้เบิกเท่านั้น</p>${section('รับเข้ามากที่สุด','received')}${section('เบิกมากที่สุด','issued')}${section('รับเข้าเทียบเบิกออก พร้อมยอดคงเหลือ','comparison',true)}</div>`;
+}
+
