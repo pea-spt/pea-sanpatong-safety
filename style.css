@@ -52,3 +52,24 @@ code,.stat strong,input[type=number]{font-family:'Roboto Mono',monospace;font-va
 #history-table th:first-child,#history-table td:first-child{position:sticky;left:0;z-index:1;background:#fff;border-right:1px solid #e8e3ed;box-shadow:3px 0 5px #24203308}
 #history-table th:first-child{z-index:2}
 #history-table td:first-child button{white-space:nowrap}
+
+/* Fit history to the viewport and truncate long details instead of scrolling. */
+#history-table{min-width:0;max-width:100%}
+#history-table .table-wrap{overflow:hidden}
+#history-table table{table-layout:fixed;width:100%}
+#history-table th,#history-table td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#history-table th:first-child,#history-table td:first-child{position:static;width:112px;box-shadow:none}
+#history-table th:nth-child(2){width:100px}
+#history-table th:nth-child(7){width:68px}
+#history-table th:nth-child(8){width:50px}
+#history-table th:nth-child(10){width:72px}
+@media(max-width:1000px){
+ #history-table th:nth-child(3),#history-table td:nth-child(3),#history-table th:nth-child(6),#history-table td:nth-child(6),#history-table th:nth-child(9),#history-table td:nth-child(9),#history-table th:nth-child(10),#history-table td:nth-child(10){display:none}
+}
+@media(max-width:600px){
+ #history-table th:nth-child(2),#history-table td:nth-child(2),#history-table th:nth-child(8),#history-table td:nth-child(8){display:none}
+ #history-table th,#history-table td{padding:10px 4px;font-size:12px}
+ #history-table th:first-child,#history-table td:first-child{width:90px}
+ #history-table th:nth-child(7){width:42px}
+ #history-table td:first-child button{padding:5px 6px;font-size:12px}
+}
