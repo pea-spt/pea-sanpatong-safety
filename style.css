@@ -53,26 +53,13 @@ code,.stat strong,input[type=number]{font-family:'Roboto Mono',monospace;font-va
 #history-table th:first-child{z-index:2}
 #history-table td:first-child button{white-space:nowrap}
 
-/* Fit history to the viewport and truncate long details instead of scrolling. */
+/* Keep history columns within the viewport. */
 #history-table{min-width:0;max-width:100%}
 #history-table .table-wrap{overflow:hidden}
 #history-table table{table-layout:fixed;width:100%}
 #history-table th,#history-table td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#history-table th:first-child,#history-table td:first-child{position:static;width:112px;box-shadow:none}
-#history-table th:nth-child(2){width:100px}
-#history-table th:nth-child(7){width:68px}
-#history-table th:nth-child(8){width:50px}
-#history-table th:nth-child(10){width:72px}
-@media(max-width:1000px){
- #history-table th:nth-child(3),#history-table td:nth-child(3),#history-table th:nth-child(6),#history-table td:nth-child(6),#history-table th:nth-child(9),#history-table td:nth-child(9),#history-table th:nth-child(10),#history-table td:nth-child(10){display:none}
-}
-@media(max-width:600px){
- #history-table th:nth-child(2),#history-table td:nth-child(2),#history-table th:nth-child(8),#history-table td:nth-child(8){display:none}
- #history-table th,#history-table td{padding:10px 4px;font-size:12px}
- #history-table th:first-child,#history-table td:first-child{width:90px}
- #history-table th:nth-child(7){width:42px}
- #history-table td:first-child button{padding:5px 6px;font-size:12px}
-}
+#history-table th:first-child,#history-table td:first-child{position:static;box-shadow:none}
+@media(max-width:600px){#history-table th,#history-table td{padding:10px 4px;font-size:12px}}
 .history-group{--group-color:#287b86;--group-bg:#eef8f9;border:2px solid var(--group-color);border-radius:12px;margin:16px 0;overflow:hidden;break-inside:avoid}
 .history-color-1{--group-color:#7463a8;--group-bg:#f4f1fa}
 .history-color-2{--group-color:#a17427;--group-bg:#fff8eb}
@@ -81,3 +68,26 @@ code,.stat strong,input[type=number]{font-family:'Roboto Mono',monospace;font-va
 .history-group-title span{font-size:13px}
 .history-group .table-wrap{margin:0}
 @media print{.history-group{border-color:#555}.history-group-title{color:#111}}
+.group-evidence{padding:14px;background:#fff;color:#243447}
+.group-evidence h3{margin:0 0 8px;font-size:16px}
+.group-evidence input[type=file]{max-width:100%}
+.group-file-list{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.group-file-list a{padding:6px 10px;border:1px solid #d5dfdf;border-radius:8px;overflow-wrap:anywhere;max-width:100%}
+.group-pending{overflow-wrap:anywhere}
+.group-bills{padding:12px 14px;border-top:1px solid #d5dfdf}
+.group-bills summary{cursor:pointer;font-weight:600}
+#history-table th:first-child,#history-table td:first-child{width:100px}
+#history-table th:nth-child(2){width:100px}
+#history-table th:nth-child(6){width:68px}
+#history-table th:nth-child(7){width:50px}
+#history-table th:nth-child(9){width:72px}
+@media(max-width:1000px){
+ #history-table th,#history-table td{display:table-cell}
+ #history-table th:nth-child(2),#history-table td:nth-child(2),#history-table th:nth-child(5),#history-table td:nth-child(5),#history-table th:nth-child(8),#history-table td:nth-child(8),#history-table th:nth-child(9),#history-table td:nth-child(9){display:none}
+}
+@media(max-width:600px){
+ #history-table th:first-child,#history-table td:first-child,#history-table th:nth-child(7),#history-table td:nth-child(7){display:none}
+ #history-table th:nth-child(6){width:48px}
+ .group-evidence .actions button{width:100%}
+}
+@media print{.group-evidence label,.group-evidence .actions,.group-pending,.group-bills{display:none}}

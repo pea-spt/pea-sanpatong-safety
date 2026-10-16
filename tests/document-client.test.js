@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {connectDrive,configureDocuments,uploadFile,uploadWithdrawalFile,documentCall,resetDrive} from '../document-client.js';
+import {connectDrive,configureDocuments,uploadFile,uploadWithdrawalFile,uploadWithdrawalGroupFile,documentCall,resetDrive} from '../document-client.js';
 import {driveConfig} from '../drive-config.js';
 test('Drive rejects wrong owner and never reports attachment success after metadata save fails',async()=>{
  const priorGoogle=globalThis.google,priorFetch=globalThis.fetch;
@@ -39,5 +39,25 @@ test('large Drive uploads use a session and save only after content finishes',as
  try{await connectDrive();await uploadFile({officeId:'sanpatong',environment:'qa'},'f',file,'ตรวจรับ');assert.equal(saved,1);
   uploaded=false;globalThis.fetch=async url=>url.includes('uploadType=resumable')?new Response(null,{headers:{Location:'https://evil.example/upload'}}):Response.json({files:[{id:'test_folder_123'}]});
   await assert.rejects(uploadFile({officeId:'sanpatong',environment:'qa'},'f',file,'ตรวจรับ'),/ช่องทางอัปโหลด/);assert.equal(saved,1);
+ }finally{resetDrive();globalThis.google=priorGoogle;globalThis.fetch=priorFetch;}
+});
+
+test('group uploads share one Drive folder across bills and reject a changed recipient',async()=>{
+ const priorGoogle=globalThis.google,priorFetch=globalThis.fetch;
+ let state={items:{a:{qty:3}},movements:{a:{id:'a',kind:'withdrawal',date:'2026-10-16',personId:'p',lines:[]},b:{id:'b',kind:'withdrawal',date:'2026-10-16',personId:'p',lines:[]}}};
+ const queries=[];
+ globalThis.google={accounts:{oauth2:{initTokenClient:o=>({requestAccessToken:()=>o.callback({access_token:'test',expires_in:3600,scope:o.scope})})}}};
+ globalThis.fetch=async url=>{
+  if(url.includes('/about?'))return Response.json({user:{emailAddress:driveConfig.ownerEmail}});
+  if(url.includes('uploadType='))return Response.json({id:'group_file_123'});
+  queries.push(new URL(url).searchParams.get('q'));return Response.json({files:[{id:'shared_folder_123'}]});
+ };
+ configureDocuments({},()=>{}, {actor:()=>({uid:'test',email:'test@example.test'}),movement:async(c,id)=>state.movements[id],timestamp:()=>1,save:async(c,update)=>{state=update(state);}});
+ try{
+  await connectDrive();const context={officeId:'sanpatong',environment:'qa'},key=JSON.stringify(['sanpatong','p','2026-10-16']),file=new File(['%PDF-1.4 test'],'proof.pdf');
+  await uploadWithdrawalGroupFile(context,'a',key,file);await uploadWithdrawalGroupFile(context,'b',key,file);
+  assert.equal(queries.length,2);assert.equal(queries[0],queries[1]);assert.match(queries[0],/qa-sanpatong-group-/);
+  assert.equal(Object.values(state.movements.a.files)[0].evidenceGroup,key);assert.equal(state.items.a.qty,3);
+  state.movements.b.personId='other';await assert.rejects(uploadWithdrawalGroupFile(context,'b',key,file),/เปลี่ยน/);
  }finally{resetDrive();globalThis.google=priorGoogle;globalThis.fetch=priorFetch;}
 });

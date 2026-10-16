@@ -1,11 +1,13 @@
+import {historyGroups} from './history-view.js?v=20261016-group-evidence';
+import {mountWithdrawalGroupEvidence} from './withdrawal-group-ui.js';
 import {recipientOptions,parseRecipient,officeNames} from './recipients.js';
 import {changeWithdrawalPerson} from './withdrawal-person.js?v=20261015-cross';
 import {isCurrentPerson} from './person-status.js';
 import {cancelWithdrawal,reviseWithdrawal,withdrawalView} from './withdrawal-cancel.js?v=20261015-withdrawal-items';
 import {searchSelects} from './select-search.js';
-import {documentCall,connectDrive,uploadWithdrawalFile} from './document-client.js?v=20261013-withdrawal';
+import {documentCall,connectDrive,uploadWithdrawalFile} from './document-client.js?v=20261016-group-evidence';
 import {driveUrl} from './drive-policy.js';
-import {editWithdrawalEvidence} from './withdrawal-evidence.js';
+import {editWithdrawalEvidence} from './withdrawal-evidence.js?v=20261016-group-evidence';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const selected=new Map(),pending=new Map(),uploading=new Set();
 const scope=c=>`${c.environment}:${c.officeId}`;
@@ -25,7 +27,7 @@ export function mountWithdrawals(host,options){
  const {getState,context,report,save,actor,timestamp}=options;
  host.innerHTML='<section class="card"><h2>รายการเบิกจ่าย — เปิดใบและจัดการ</h2><label>ค้นหารายการเบิกจ่าย<input type="search" placeholder="ชื่อผู้เบิก วันที่ หรืออุปกรณ์"></label><div class="withdrawal-list"></div><div class="withdrawal-editor"></div></section>';
  const list=host.querySelector('.withdrawal-list'),editor=host.querySelector('.withdrawal-editor');
- const draw=q=>{const rows=Object.values(getState().movements||{}).filter(m=>m.kind==='withdrawal'&&[m.personName,m.empId,m.date,...m.lines.map(l=>l.name+' '+(l.variant||''))].join(' ').includes(q)).sort((a,b)=>(b.ts||0)-(a.ts||0));list.innerHTML=rows.length?rows.map(m=>`<div class="cart"><strong>${esc(m.date)} • ${esc(m.personName||m.empId)}</strong><p>${withdrawalView(getState(),m.id).lines.map(l=>`${esc(l.name)} ${esc(l.variant)} • ${l.qty} ${esc(l.unit)}`).join(' / ')}</p><p>${m.cancelledByMovement?'ยกเลิกแล้ว • คืนคลังแล้ว':'ใช้งาน'} • ${Object.keys(m.files||{}).length} ไฟล์</p><button type="button" data-withdrawal="${esc(m.id)}">เปิดใบเบิก / แก้ไข / ยกเลิก</button></div>`).join(''):'<p>ไม่พบรายการเบิกจ่าย</p>';list.querySelectorAll('button').forEach(b=>b.onclick=()=>{selected.set(scope(context),b.dataset.withdrawal);open(b.dataset.withdrawal);});};
+ const draw=q=>{const rows=Object.values(getState().movements||{}).filter(m=>m.kind==='withdrawal'&&[m.personName,m.empId,m.date,...m.lines.map(l=>l.name+' '+(l.variant||''))].join(' ').includes(q)).sort((a,b)=>(b.ts||0)-(a.ts||0));list.innerHTML=rows.length?historyGroups(rows,context.officeId).map((group,index)=>`<section class="history-group history-color-${index%4}"><div class="history-group-title"><strong>${esc(group.rows[0].personName||group.rows[0].empId)} • ${esc(group.rows[0].date)}</strong><span>${group.rows.length} ใบเบิก • เบิกวันเดียวกัน</span></div>${group.grouped?`<div data-withdrawal-group="${esc(group.key)}"></div>`:''}<details class="group-bills"><summary>ดูใบเบิกในกลุ่ม / แก้ไขยอด (${group.rows.length} ใบ)</summary>${group.rows.map(m=>`<div class="cart"><strong>${esc(m.date)} • ${esc(m.personName||m.empId)}</strong><p>${withdrawalView(getState(),m.id).lines.map(l=>`${esc(l.name)} ${esc(l.variant)} • ${l.qty} ${esc(l.unit)}`).join(' / ')}</p><p>${m.cancelledByMovement?'ยกเลิกแล้ว • คืนคลังแล้ว':'ใช้งาน'}</p><button type="button" data-withdrawal="${esc(m.id)}">เปิดใบเบิก / แก้ไข / ยกเลิก</button></div>`).join('')}</details></section>`).join(''):'<p>ไม่พบรายการเบิกจ่าย</p>';list.querySelectorAll('[data-withdrawal-group]').forEach(el=>mountWithdrawalGroupEvidence(el,el.dataset.withdrawalGroup,options));list.querySelectorAll('[data-withdrawal]').forEach(b=>b.onclick=()=>{selected.set(scope(context),b.dataset.withdrawal);open(b.dataset.withdrawal);});};
  host.querySelector('input[type=search]').oninput=e=>draw(e.target.value);draw('');
  function open(id){
   const movement=getState().movements?.[id];if(movement?.kind!=='withdrawal')return;

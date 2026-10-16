@@ -1,10 +1,12 @@
 import {driveUrl} from './drive-policy.js';
+import {withdrawalGroupKey} from './withdrawal-groups.js';
 export function attachWithdrawalEvidence(current,record){
  const next=structuredClone(current),movement=next.movements?.[record.movementId];
  if(movement?.kind!=='withdrawal')throw Error('ไม่พบรายการเบิกจ่าย');
  driveUrl(record.driveFileId);
  movement.files||={};
  if(movement.files[record.id]){if(movement.files[record.id].driveFileId!==record.driveFileId)throw Error('รหัสไฟล์ซ้ำ');return next;}
+ if(record.evidenceGroup&&record.evidenceGroup!==withdrawalGroupKey(movement,record.evidenceOfficeId))throw Error('กลุ่มผู้เบิกหรือวันที่เปลี่ยนแล้ว กรุณาเปิดกลุ่มใหม่');
  if(record.replacesId&&(!movement.files[record.replacesId]||Object.values(movement.files).some(f=>f.replacesId===record.replacesId)))throw Error('ไฟล์นี้มีรุ่นใหม่แล้ว กรุณาเปิดรายการใหม่');
  movement.files[record.id]=record;return next;
 }

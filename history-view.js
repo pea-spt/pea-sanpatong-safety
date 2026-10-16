@@ -1,12 +1,12 @@
 import {withdrawalView} from './withdrawal-cancel.js';
+import {withdrawalGroupKey} from './withdrawal-groups.js';
 // Group only identified recipients; unrelated receipts remain in their original bills.
-export function historyGroups(rows){
+export function historyGroups(rows,officeId=''){
  const groups=new Map();
  for(const row of rows){
-  const person=row.personId||row.empId;
-  const grouped=row.kind==='withdrawal'&&person&&row.date;
-  const key=JSON.stringify(grouped?['person-day',row.personOfficeId||'',person,row.date]:['bill',row.id]);
-  if(!groups.has(key))groups.set(key,{grouped:!!grouped,rows:[]});
+  const groupKey=withdrawalGroupKey(row,officeId);
+  const key=groupKey||JSON.stringify(['bill',row.id]);
+  if(!groups.has(key))groups.set(key,{key,grouped:!!groupKey,rows:[]});
   groups.get(key).rows.push(row);
  }
  return [...groups.values()];

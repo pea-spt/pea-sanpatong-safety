@@ -1,5 +1,5 @@
 import {searchSelects} from './select-search.js';
-import {createFolder,linkReceipt,folderDocuments,folderReceipts} from './procurement.js';import {receiptView} from './receipt-edit.js';import {documentCall,connectDrive,uploadFile,openFile} from './document-client.js?v=20261013-withdrawal';
+import {createFolder,linkReceipt,folderDocuments,folderReceipts} from './procurement.js';import {receiptView} from './receipt-edit.js';import {documentCall,connectDrive,uploadFile,openFile} from './document-client.js?v=20261016-group-evidence';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const categories=['ขอซื้อ','อนุมัติ','ใบสั่งซื้อ','ใบส่งของ','ตรวจรับ','ใบแจ้งหนี้','รูปประกอบ','อื่น ๆ'];
 const selectedFolders=new Map(),uploads=new Map(),storageReady=new Map();
