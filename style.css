@@ -73,3 +73,11 @@ code,.stat strong,input[type=number]{font-family:'Roboto Mono',monospace;font-va
  #history-table th:nth-child(7){width:42px}
  #history-table td:first-child button{padding:5px 6px;font-size:12px}
 }
+.history-group{--group-color:#287b86;--group-bg:#eef8f9;border:2px solid var(--group-color);border-radius:12px;margin:16px 0;overflow:hidden;break-inside:avoid}
+.history-color-1{--group-color:#7463a8;--group-bg:#f4f1fa}
+.history-color-2{--group-color:#a17427;--group-bg:#fff8eb}
+.history-color-3{--group-color:#44794e;--group-bg:#f0f8f1}
+.history-group-title{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 16px;padding:12px 14px;background:var(--group-bg);color:#243447;border-bottom:1px solid var(--group-color)}
+.history-group-title span{font-size:13px}
+.history-group .table-wrap{margin:0}
+@media print{.history-group{border-color:#555}.history-group-title{color:#111}}

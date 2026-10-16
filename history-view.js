@@ -1,4 +1,16 @@
 import {withdrawalView} from './withdrawal-cancel.js';
+// Group only identified recipients; unrelated receipts remain in their original bills.
+export function historyGroups(rows){
+ const groups=new Map();
+ for(const row of rows){
+  const person=row.personId||row.empId;
+  const grouped=row.kind==='withdrawal'&&person&&row.date;
+  const key=JSON.stringify(grouped?['person-day',row.personOfficeId||'',person,row.date]:['bill',row.id]);
+  if(!groups.has(key))groups.set(key,{grouped:!!grouped,rows:[]});
+  groups.get(key).rows.push(row);
+ }
+ return [...groups.values()];
+}
 // Keep withdrawal revisions in their original bill, using its original ordering and recipient.
 // The immutable movement ledger remains available in the bill revision history.
 export function historyRows(state){
