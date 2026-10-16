@@ -6,12 +6,17 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 function redraw(){for(const view of views){if(view.host.isConnected)view.draw();else views.delete(view);}}
 export function mountWithdrawalGroupEvidence(host,key,options){
  const {getState,context,report}=options,sessionKey=JSON.stringify([context.environment,context.officeId,options.actor?.uid||'',key]);
- if(!sessions.has(sessionKey))sessions.set(sessionKey,{files:[],busy:false,status:''});
+ if(!sessions.has(sessionKey))sessions.set(sessionKey,{files:[],busy:false,status:'',expanded:false});
  const session=sessions.get(sessionKey);
  function draw(){
+  const previous=host.querySelector('.group-evidence-details');
+  if(previous)session.expanded=previous.open;
   const group=withdrawalGroup(getState(),key,context.officeId);
   host.classList.add('group-evidence');
-  host.innerHTML=`<h3>หลักฐานร่วมของกลุ่ม • ${group.files.length} ไฟล์</h3><p class="hint">รูปถ่ายรวมหรือแยกอัปโหลดไว้ด้วยกันได้ เพิ่มได้หลายครั้ง ไม่ต้องแนบซ้ำทีละใบ • สูงสุด 100 MB ต่อไฟล์</p><div class="group-file-list">${group.files.map(f=>`<a href="${driveUrl(f.driveFileId)}" target="_blank" rel="noopener noreferrer">${esc(f.name)}${f.evidenceGroup?'':' (จากใบเบิกเดิม)'}</a>`).join('')}${group.links.map((link,i)=>`<a href="${esc(link)}" target="_blank" rel="noopener noreferrer">ลิงก์หลักฐานเดิม ${i+1}</a>`).join('')||''}</div><label>เพิ่มรูป / เอกสารของกลุ่ม<input type="file" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" ${session.busy?'disabled':''}></label><p class="group-pending">${session.files.length?'รออัปโหลด '+session.files.length+' ไฟล์: '+session.files.map(f=>esc(f.name)).join(' • '):''}</p><div class="actions"><button type="button" class="group-upload" ${session.busy?'disabled':''}>${session.busy?'กำลังอัปโหลด…':'อัปโหลดหลักฐานเข้ากลุ่ม'}</button>${session.files.length&&!session.busy?'<button type="button" class="group-clear">ล้างไฟล์ที่เลือก</button>':''}</div><p role="status">${esc(session.status)}</p>`;
+  host.innerHTML=`<details class="group-evidence-details" ${session.expanded?'open':''}><summary>หลักฐานร่วมของกลุ่ม • ${group.files.length} ไฟล์ <span>${session.busy?'กำลังอัปโหลด…':session.files.length?'รออัปโหลด '+session.files.length+' ไฟล์':'ดู / เพิ่มรูป'}</span></summary><div class="group-evidence-body"><p class="hint">รูปถ่ายรวมหรือแยกอัปโหลดไว้ด้วยกันได้ เพิ่มได้หลายครั้ง ไม่ต้องแนบซ้ำทีละใบ • สูงสุด 100 MB ต่อไฟล์</p><div class="group-file-list">${group.files.map(f=>`<a href="${driveUrl(f.driveFileId)}" target="_blank" rel="noopener noreferrer">${esc(f.name)}${f.evidenceGroup?'':' (จากใบเบิกเดิม)'}</a>`).join('')}${group.links.map((link,i)=>`<a href="${esc(link)}" target="_blank" rel="noopener noreferrer">ลิงก์หลักฐานเดิม ${i+1}</a>`).join('')||''}</div><label>เพิ่มรูป / เอกสารของกลุ่ม<input type="file" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" ${session.busy?'disabled':''}></label><p class="group-pending">${session.files.length?'รออัปโหลด '+session.files.length+' ไฟล์: '+session.files.map(f=>esc(f.name)).join(' • '):''}</p><div class="actions"><button type="button" class="group-upload" ${session.busy?'disabled':''}>${session.busy?'กำลังอัปโหลด…':'อัปโหลดหลักฐานเข้ากลุ่ม'}</button>${session.files.length&&!session.busy?'<button type="button" class="group-clear">ล้างไฟล์ที่เลือก</button>':''}</div><p role="status">${esc(session.status)}</p></div></details>`;
+  const details=host.querySelector('.group-evidence-details');
+  details.querySelector('summary').onclick=()=>{session.expanded=!details.open;};
+  details.ontoggle=()=>{if(host.firstElementChild===details)session.expanded=details.open;};
   host.querySelector('input').onchange=e=>{session.files.push(...e.target.files);session.status='';redraw();};
   const clear=host.querySelector('.group-clear');if(clear)clear.onclick=()=>{session.files=[];session.status='';redraw();};
   host.querySelector('.group-upload').onclick=async()=>{

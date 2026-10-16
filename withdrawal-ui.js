@@ -1,5 +1,5 @@
 import {historyGroups,compareHistoryDate} from './history-view.js?v=20261016-issue-date';
-import {mountWithdrawalGroupEvidence} from './withdrawal-group-ui.js';
+import {mountWithdrawalGroupEvidence} from './withdrawal-group-ui.js?v=20261016-collapse-evidence';
 import {recipientOptions,parseRecipient,officeNames} from './recipients.js';
 import {changeWithdrawalPerson} from './withdrawal-person.js?v=20261015-cross';
 import {isCurrentPerson} from './person-status.js';

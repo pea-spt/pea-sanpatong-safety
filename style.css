@@ -91,3 +91,6 @@ code,.stat strong,input[type=number]{font-family:'Roboto Mono',monospace;font-va
  .group-evidence .actions button{width:100%}
 }
 @media print{.group-evidence label,.group-evidence .actions,.group-pending,.group-bills{display:none}}
+.group-evidence-details>summary{cursor:pointer;font-weight:600}
+.group-evidence-details>summary span{font-size:12px;font-weight:400;margin-left:8px;color:#596579}
+.group-evidence-body{padding-top:12px}
