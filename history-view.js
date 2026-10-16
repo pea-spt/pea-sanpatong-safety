@@ -1,5 +1,9 @@
 import {withdrawalView} from './withdrawal-cancel.js';
 import {withdrawalGroupKey} from './withdrawal-groups.js';
+// Business date controls display order; timestamps only order bills on the same day.
+export function compareHistoryDate(a,b){
+ return String(b.date||'').localeCompare(String(a.date||''))||((b.ts||0)-(a.ts||0));
+}
 // Group only identified recipients; unrelated receipts remain in their original bills.
 export function historyGroups(rows,officeId=''){
  const groups=new Map();
@@ -9,12 +13,12 @@ export function historyGroups(rows,officeId=''){
   if(!groups.has(key))groups.set(key,{key,grouped:!!groupKey,rows:[]});
   groups.get(key).rows.push(row);
  }
- return [...groups.values()];
+ return [...groups.values()].sort((a,b)=>compareHistoryDate(a.rows[0],b.rows[0]));
 }
 // Keep withdrawal revisions in their original bill, using its original ordering and recipient.
 // The immutable movement ledger remains available in the bill revision history.
 export function historyRows(state){
- const movements=Object.values(state.movements||{}).filter(m=>!(m.withdrawalId&&state.movements?.[m.withdrawalId]?.kind==='withdrawal')).sort((a,b)=>(b.ts||0)-(a.ts||0));
+ const movements=Object.values(state.movements||{}).filter(m=>!(m.withdrawalId&&state.movements?.[m.withdrawalId]?.kind==='withdrawal')).sort(compareHistoryDate);
  return movements.flatMap(m=>{
   const lines=m.kind==='withdrawal'?withdrawalView(state,m.id).lines.filter(l=>l.qty>0||m.cancelledByMovement):m.lines||[];
   return lines.map(l=>({...m,...l,id:m.id,lines:undefined}));
