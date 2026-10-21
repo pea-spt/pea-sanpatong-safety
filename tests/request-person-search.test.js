@@ -2,31 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-import {requestPersonQuery,requestPersonMatches} from '../functions/request-person-policy.js';
-import {officePath} from '../functions/document-policy.js';
-
-test('lookup query validates field and normalized bounded text',()=>{
- assert.deepEqual(requestPersonQuery({field:'fullName',query:'  ABC   DEF  '}),{field:'fullName',query:'abc def'});
- for(const data of [null,{field:'password',query:'abc'},{field:'empId',query:123},{field:'empId',query:'ab'},{field:'fullName',query:'x'.repeat(121)}])assert.throws(()=>requestPersonQuery(data));
-});
-test('lookup returns at most eight active matches with only identity pair',()=>{
- const people=Object.fromEntries(Array.from({length:12},(_,i)=>[i,{empId:`001${i}`,fullName:`Name ${i}`,active:true,department:'private'}]));
- people.a={empId:'001a',fullName:'inactive',active:false};people.b={empId:'001b',fullName:'transferred',active:true,employmentStatus:'transferred'};
- const matches=requestPersonMatches(people,requestPersonQuery({field:'empId',query:'001'}));assert.equal(matches.length,8);assert.deepEqual(Object.keys(matches[0]),['empId','fullName']);
- assert.deepEqual(requestPersonMatches({a:people.a,b:people.b},{field:'empId',query:'001'}),[]);
- assert.equal(requestPersonMatches(people,{field:'fullName',query:'name 11'})[0].empId,'00111');
-});
-test('callable requires auth, App Check, valid office/environment and request enabled; scopes reads',async()=>{
- const source=readFileSync(new URL('../functions/index.js',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').split('async function authorize')[0].replace('export const searchRequestPeople','const searchRequestPeople')+'\nsearchRequestPeople;';
- let enabled=true;const reads=[];let options;
- const context=vm.createContext({initializeApp(){},getStorage:()=>({bucket:()=>({})}),getDatabase:()=>({ref:path=>({async get(){reads.push(path);return {val:()=>path.endsWith('/requestEnabled')?enabled:{p:{active:true,empId:'001',fullName:'Test'}}};}})}),onCall:(opts,handler)=>{options=opts;return handler;},HttpsError:class extends Error{constructor(code,message){super(message);this.code=code;}},officePath,requestPersonQuery,requestPersonMatches});
- const callable=vm.runInContext(source,context);assert.equal(options.enforceAppCheck,true);assert.deepEqual(Array.from(options.cors),['https://pea-spt.github.io']);
- await assert.rejects(callable({data:{}}),{code:'unauthenticated'});assert.equal(reads.length,0);
- await assert.rejects(callable({auth:{uid:'guest'},data:{officeId:'../office',environment:'live',field:'empId',query:'001'}}),{code:'invalid-argument'});assert.equal(reads.length,0);
- for(const [officeId,environment,path] of [['sanpatong','live','office'],['maewang','live','offices/maewang'],['sanpatong','qa','qa/office'],['maewang','qa','qa/offices/maewang']]){reads.length=0;const result=await callable({auth:{uid:'guest'},data:{officeId,environment,field:'empId',query:'001'}});assert.equal(result.people[0].empId,'001');assert.deepEqual(reads,[`${path}/requestEnabled`,`${path}/people`]);}
- enabled=false;reads.length=0;await assert.rejects(callable({auth:{uid:'guest'},data:{officeId:'sanpatong',environment:'live',field:'empId',query:'001'}}),{code:'failed-precondition'});assert.deepEqual(reads,['office/requestEnabled']);
-});
-
 function searchHarness(lookup){
  let next=0;const timers=new Map();
  function element(name=''){

@@ -26,6 +26,31 @@
           ".validate": "newData.hasChildren(['id','kind','by','byEmail','ts','date','lines']) && newData.child('id').val() === $id && (newData.child('kind').val() === 'receipt' || newData.child('kind').val() === 'withdrawal' || newData.child('kind').val() === 'adjustment') && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now)) && (newData.child('kind').val() !== 'withdrawal' || (data.exists() && newData.child('personId').val() === data.child('personId').val() && newData.child('personOfficeId').val() === data.child('personOfficeId').val() && newData.child('personName').val() === data.child('personName').val() && newData.child('empId').val() === data.child('empId').val()) || (((newData.child('personOfficeId').val() === 'sanpatong' || !newData.hasChild('personOfficeId')) && root.child('office/people').child(newData.child('personId').val()).child('active').val() === true && (!root.child('office/people').child(newData.child('personId').val()).hasChild('employmentStatus') || root.child('office/people').child(newData.child('personId').val()).child('employmentStatus').val() === 'active') && newData.child('personName').val() === root.child('office/people').child(newData.child('personId').val()).child('fullName').val() && newData.child('empId').val() === root.child('office/people').child(newData.child('personId').val()).child('empId').val()) || ((newData.child('personOfficeId').val() === 'maewang') && root.child('offices/maewang/people').child(newData.child('personId').val()).child('active').val() === true && (!root.child('offices/maewang/people').child(newData.child('personId').val()).hasChild('employmentStatus') || root.child('offices/maewang/people').child(newData.child('personId').val()).child('employmentStatus').val() === 'active') && newData.child('personName').val() === root.child('offices/maewang/people').child(newData.child('personId').val()).child('fullName').val() && newData.child('empId').val() === root.child('offices/maewang/people').child(newData.child('personId').val()).child('empId').val())))"
         }
       },
+      "requestPeople": {
+        ".read": "auth != null && auth.token.firebase.sign_in_provider === 'anonymous' && root.child('office/requestEnabled').val() === true && (query.orderByChild === 'empIdSearch' || query.orderByChild === 'fullNameSearch') && query.startAt != null && query.startAt.length >= 3 && query.startAt.length <= 120 && query.endAt === query.startAt + '\\uf8ff' && query.limitToFirst != null && query.limitToFirst > 0 && query.limitToFirst <= 8",
+        ".indexOn": [
+          "empIdSearch",
+          "fullNameSearch"
+        ],
+        "$id": {
+          ".validate": "newData.hasChildren(['empId','fullName','empIdSearch','fullNameSearch']) && newData.parent().parent().child('people').child($id).child('active').val() === true && (!newData.parent().parent().child('people').child($id).hasChild('employmentStatus') || newData.parent().parent().child('people').child($id).child('employmentStatus').val() === 'active') && newData.child('empId').val() === newData.parent().parent().child('people').child($id).child('empId').val() && newData.child('fullName').val() === newData.parent().parent().child('people').child($id).child('fullName').val() && newData.child('empIdSearch').val() === newData.parent().parent().child('people').child($id).child('empId').val().toLowerCase() && newData.child('fullNameSearch').val() === newData.parent().parent().child('people').child($id).child('fullName').val().toLowerCase()",
+          "empId": {
+            ".validate": "newData.isString()"
+          },
+          "fullName": {
+            ".validate": "newData.isString()"
+          },
+          "empIdSearch": {
+            ".validate": "newData.isString()"
+          },
+          "fullNameSearch": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
       "catalog": {
         ".read": "auth != null && root.child('office/requestEnabled').val() === true"
       },
@@ -126,6 +151,31 @@
         "movements": {
           "$id": {
             ".validate": "newData.hasChildren(['id','kind','by','byEmail','ts','date','lines']) && newData.child('id').val() === $id && (newData.child('kind').val() === 'receipt' || newData.child('kind').val() === 'withdrawal' || newData.child('kind').val() === 'adjustment') && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now)) && (newData.child('kind').val() !== 'withdrawal' || (data.exists() && newData.child('personId').val() === data.child('personId').val() && newData.child('personOfficeId').val() === data.child('personOfficeId').val() && newData.child('personName').val() === data.child('personName').val() && newData.child('empId').val() === data.child('empId').val()) || (((newData.child('personOfficeId').val() === 'sanpatong') && root.child('office/people').child(newData.child('personId').val()).child('active').val() === true && (!root.child('office/people').child(newData.child('personId').val()).hasChild('employmentStatus') || root.child('office/people').child(newData.child('personId').val()).child('employmentStatus').val() === 'active') && newData.child('personName').val() === root.child('office/people').child(newData.child('personId').val()).child('fullName').val() && newData.child('empId').val() === root.child('office/people').child(newData.child('personId').val()).child('empId').val()) || ((newData.child('personOfficeId').val() === 'maewang' || !newData.hasChild('personOfficeId')) && root.child('offices/maewang/people').child(newData.child('personId').val()).child('active').val() === true && (!root.child('offices/maewang/people').child(newData.child('personId').val()).hasChild('employmentStatus') || root.child('offices/maewang/people').child(newData.child('personId').val()).child('employmentStatus').val() === 'active') && newData.child('personName').val() === root.child('offices/maewang/people').child(newData.child('personId').val()).child('fullName').val() && newData.child('empId').val() === root.child('offices/maewang/people').child(newData.child('personId').val()).child('empId').val())))"
+          }
+        },
+        "requestPeople": {
+          ".read": "auth != null && auth.token.firebase.sign_in_provider === 'anonymous' && root.child('offices/maewang/requestEnabled').val() === true && (query.orderByChild === 'empIdSearch' || query.orderByChild === 'fullNameSearch') && query.startAt != null && query.startAt.length >= 3 && query.startAt.length <= 120 && query.endAt === query.startAt + '\\uf8ff' && query.limitToFirst != null && query.limitToFirst > 0 && query.limitToFirst <= 8",
+          ".indexOn": [
+            "empIdSearch",
+            "fullNameSearch"
+          ],
+          "$id": {
+            ".validate": "newData.hasChildren(['empId','fullName','empIdSearch','fullNameSearch']) && newData.parent().parent().child('people').child($id).child('active').val() === true && (!newData.parent().parent().child('people').child($id).hasChild('employmentStatus') || newData.parent().parent().child('people').child($id).child('employmentStatus').val() === 'active') && newData.child('empId').val() === newData.parent().parent().child('people').child($id).child('empId').val() && newData.child('fullName').val() === newData.parent().parent().child('people').child($id).child('fullName').val() && newData.child('empIdSearch').val() === newData.parent().parent().child('people').child($id).child('empId').val().toLowerCase() && newData.child('fullNameSearch').val() === newData.parent().parent().child('people').child($id).child('fullName').val().toLowerCase()",
+            "empId": {
+              ".validate": "newData.isString()"
+            },
+            "fullName": {
+              ".validate": "newData.isString()"
+            },
+            "empIdSearch": {
+              ".validate": "newData.isString()"
+            },
+            "fullNameSearch": {
+              ".validate": "newData.isString()"
+            },
+            "$other": {
+              ".validate": false
+            }
           }
         },
         "catalog": {
@@ -231,6 +281,31 @@
             ".validate": "newData.hasChildren(['id','kind','by','byEmail','ts','date','lines']) && newData.child('id').val() === $id && (newData.child('kind').val() === 'receipt' || newData.child('kind').val() === 'withdrawal' || newData.child('kind').val() === 'adjustment') && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now)) && (newData.child('kind').val() !== 'withdrawal' || (data.exists() && newData.child('personId').val() === data.child('personId').val() && newData.child('personOfficeId').val() === data.child('personOfficeId').val() && newData.child('personName').val() === data.child('personName').val() && newData.child('empId').val() === data.child('empId').val()) || (((newData.child('personOfficeId').val() === 'sanpatong' || !newData.hasChild('personOfficeId')) && root.child('qa/office/people').child(newData.child('personId').val()).child('active').val() === true && (!root.child('qa/office/people').child(newData.child('personId').val()).hasChild('employmentStatus') || root.child('qa/office/people').child(newData.child('personId').val()).child('employmentStatus').val() === 'active') && newData.child('personName').val() === root.child('qa/office/people').child(newData.child('personId').val()).child('fullName').val() && newData.child('empId').val() === root.child('qa/office/people').child(newData.child('personId').val()).child('empId').val()) || ((newData.child('personOfficeId').val() === 'maewang') && root.child('qa/offices/maewang/people').child(newData.child('personId').val()).child('active').val() === true && (!root.child('qa/offices/maewang/people').child(newData.child('personId').val()).hasChild('employmentStatus') || root.child('qa/offices/maewang/people').child(newData.child('personId').val()).child('employmentStatus').val() === 'active') && newData.child('personName').val() === root.child('qa/offices/maewang/people').child(newData.child('personId').val()).child('fullName').val() && newData.child('empId').val() === root.child('qa/offices/maewang/people').child(newData.child('personId').val()).child('empId').val())))"
           }
         },
+        "requestPeople": {
+          ".read": "auth != null && auth.token.firebase.sign_in_provider === 'anonymous' && root.child('qa/office/requestEnabled').val() === true && (query.orderByChild === 'empIdSearch' || query.orderByChild === 'fullNameSearch') && query.startAt != null && query.startAt.length >= 3 && query.startAt.length <= 120 && query.endAt === query.startAt + '\\uf8ff' && query.limitToFirst != null && query.limitToFirst > 0 && query.limitToFirst <= 8",
+          ".indexOn": [
+            "empIdSearch",
+            "fullNameSearch"
+          ],
+          "$id": {
+            ".validate": "newData.hasChildren(['empId','fullName','empIdSearch','fullNameSearch']) && newData.parent().parent().child('people').child($id).child('active').val() === true && (!newData.parent().parent().child('people').child($id).hasChild('employmentStatus') || newData.parent().parent().child('people').child($id).child('employmentStatus').val() === 'active') && newData.child('empId').val() === newData.parent().parent().child('people').child($id).child('empId').val() && newData.child('fullName').val() === newData.parent().parent().child('people').child($id).child('fullName').val() && newData.child('empIdSearch').val() === newData.parent().parent().child('people').child($id).child('empId').val().toLowerCase() && newData.child('fullNameSearch').val() === newData.parent().parent().child('people').child($id).child('fullName').val().toLowerCase()",
+            "empId": {
+              ".validate": "newData.isString()"
+            },
+            "fullName": {
+              ".validate": "newData.isString()"
+            },
+            "empIdSearch": {
+              ".validate": "newData.isString()"
+            },
+            "fullNameSearch": {
+              ".validate": "newData.isString()"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
         "catalog": {
           ".read": "auth != null && root.child('qa/office/requestEnabled').val() === true"
         },
@@ -331,6 +406,31 @@
           "movements": {
             "$id": {
               ".validate": "newData.hasChildren(['id','kind','by','byEmail','ts','date','lines']) && newData.child('id').val() === $id && (newData.child('kind').val() === 'receipt' || newData.child('kind').val() === 'withdrawal' || newData.child('kind').val() === 'adjustment') && (data.exists() || (newData.child('by').val() === auth.uid && newData.child('ts').val() === now)) && (newData.child('kind').val() !== 'withdrawal' || (data.exists() && newData.child('personId').val() === data.child('personId').val() && newData.child('personOfficeId').val() === data.child('personOfficeId').val() && newData.child('personName').val() === data.child('personName').val() && newData.child('empId').val() === data.child('empId').val()) || (((newData.child('personOfficeId').val() === 'sanpatong') && root.child('qa/office/people').child(newData.child('personId').val()).child('active').val() === true && (!root.child('qa/office/people').child(newData.child('personId').val()).hasChild('employmentStatus') || root.child('qa/office/people').child(newData.child('personId').val()).child('employmentStatus').val() === 'active') && newData.child('personName').val() === root.child('qa/office/people').child(newData.child('personId').val()).child('fullName').val() && newData.child('empId').val() === root.child('qa/office/people').child(newData.child('personId').val()).child('empId').val()) || ((newData.child('personOfficeId').val() === 'maewang' || !newData.hasChild('personOfficeId')) && root.child('qa/offices/maewang/people').child(newData.child('personId').val()).child('active').val() === true && (!root.child('qa/offices/maewang/people').child(newData.child('personId').val()).hasChild('employmentStatus') || root.child('qa/offices/maewang/people').child(newData.child('personId').val()).child('employmentStatus').val() === 'active') && newData.child('personName').val() === root.child('qa/offices/maewang/people').child(newData.child('personId').val()).child('fullName').val() && newData.child('empId').val() === root.child('qa/offices/maewang/people').child(newData.child('personId').val()).child('empId').val())))"
+            }
+          },
+          "requestPeople": {
+            ".read": "auth != null && auth.token.firebase.sign_in_provider === 'anonymous' && root.child('qa/offices/maewang/requestEnabled').val() === true && (query.orderByChild === 'empIdSearch' || query.orderByChild === 'fullNameSearch') && query.startAt != null && query.startAt.length >= 3 && query.startAt.length <= 120 && query.endAt === query.startAt + '\\uf8ff' && query.limitToFirst != null && query.limitToFirst > 0 && query.limitToFirst <= 8",
+            ".indexOn": [
+              "empIdSearch",
+              "fullNameSearch"
+            ],
+            "$id": {
+              ".validate": "newData.hasChildren(['empId','fullName','empIdSearch','fullNameSearch']) && newData.parent().parent().child('people').child($id).child('active').val() === true && (!newData.parent().parent().child('people').child($id).hasChild('employmentStatus') || newData.parent().parent().child('people').child($id).child('employmentStatus').val() === 'active') && newData.child('empId').val() === newData.parent().parent().child('people').child($id).child('empId').val() && newData.child('fullName').val() === newData.parent().parent().child('people').child($id).child('fullName').val() && newData.child('empIdSearch').val() === newData.parent().parent().child('people').child($id).child('empId').val().toLowerCase() && newData.child('fullNameSearch').val() === newData.parent().parent().child('people').child($id).child('fullName').val().toLowerCase()",
+              "empId": {
+                ".validate": "newData.isString()"
+              },
+              "fullName": {
+                ".validate": "newData.isString()"
+              },
+              "empIdSearch": {
+                ".validate": "newData.isString()"
+              },
+              "fullNameSearch": {
+                ".validate": "newData.isString()"
+              },
+              "$other": {
+                ".validate": false
+              }
             }
           },
           "catalog": {
