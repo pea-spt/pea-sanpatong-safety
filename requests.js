@@ -7,8 +7,9 @@ export function approveRequest(current,owner,id,actor,ts,date){
  if(!r)throw Error('ไม่พบคำขอ');
  if(s.movements?.[id])return s;
  if(r.status!=='pending')throw Error('คำขอนี้ดำเนินการแล้ว');
- const people=Object.entries(s.people||{}).filter(([,p])=>p.empId===r.empId&&isCurrentPerson(p));
- if(people.length!==1)throw Error('กรุณาเพิ่มหรือตรวจรหัสผู้เบิกในทะเบียนก่อนยืนยันจ่าย');
+ const normalizeName=value=>String(value||'').trim().replace(/\s+/g,' '),empId=String(r.empId||'').trim(),fullName=normalizeName(r.fullName);
+ const people=Object.entries(s.people||{}).filter(([,p])=>isCurrentPerson(p)&&(empId?p.empId===empId:fullName&&normalizeName(p.fullName)===fullName));
+ if(people.length!==1)throw Error(empId?'กรุณาเพิ่มหรือตรวจรหัสผู้เบิกในทะเบียนก่อนยืนยันจ่าย':'กรุณาตรวจชื่อผู้เบิกในทะเบียนให้ตรงและไม่ซ้ำก่อนยืนยันจ่าย');
  const [personId,p]=people[0];
  const result=applyMovement(s,{id,kind:'withdrawal',personId,empId:p.empId,personName:p.fullName,requestName:r.fullName,requestId:id,by:actor.uid,byEmail:actor.email,ts,date,note:r.note||'',lines:r.lines});
  result.requests[owner][id]={...r,status:'approved',processedBy:actor.uid,processedAt:ts};

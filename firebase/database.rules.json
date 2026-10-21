@@ -45,7 +45,7 @@
               ".validate": "newData.val() === 'sanpatong'"
             },
             "empId": {
-              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+              ".validate": "newData.isString() && newData.val().length <= 40"
             },
             "fullName": {
               ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
@@ -147,7 +147,7 @@
                 ".validate": "newData.val() === 'maewang'"
               },
               "empId": {
-                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+                ".validate": "newData.isString() && newData.val().length <= 40"
               },
               "fullName": {
                 ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
@@ -250,7 +250,7 @@
                 ".validate": "newData.val() === 'sanpatong'"
               },
               "empId": {
-                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+                ".validate": "newData.isString() && newData.val().length <= 40"
               },
               "fullName": {
                 ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
@@ -352,7 +352,7 @@
                   ".validate": "newData.val() === 'maewang'"
                 },
                 "empId": {
-                  ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+                  ".validate": "newData.isString() && newData.val().length <= 40"
                 },
                 "fullName": {
                   ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"

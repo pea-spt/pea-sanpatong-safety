@@ -1,8 +1,16 @@
 import {initializeApp} from 'firebase-admin/app';import {getDatabase,ServerValue} from 'firebase-admin/database';import {getStorage} from 'firebase-admin/storage';import {onCall,HttpsError} from 'firebase-functions/v2/https';import {createHash} from 'node:crypto';
 import {MAX_BYTES,officePath,allowedOffice,safeId,validateUpload} from './document-policy.js';
+import {requestPersonQuery,requestPersonMatches} from './request-person-policy.js';
 initializeApp({databaseURL:'https://ppe-sanpatong-default-rtdb.asia-southeast1.firebasedatabase.app',storageBucket:'ppe-sanpatong.firebasestorage.app'});
 const opts={region:'asia-southeast1',enforceAppCheck:true,memory:'512MiB',timeoutSeconds:120,maxInstances:3,cors:['https://pea-spt.github.io']};
 const db=getDatabase(),bucket=getStorage().bucket();
+// No directory read permission is granted to the public client. Return only bounded matches.
+export const searchRequestPeople=onCall({...opts,memory:'256MiB',timeoutSeconds:15},async request=>{
+ if(!request.auth)throw new HttpsError('unauthenticated','กรุณาเปิดหน้าคำขอใหม่');
+ let path,search;try{path=officePath(request.data?.officeId,request.data?.environment);search=requestPersonQuery(request.data);}catch(e){throw new HttpsError('invalid-argument',e.message);}
+ if((await db.ref(`${path}/requestEnabled`).get()).val()!==true)throw new HttpsError('failed-precondition','หน่วยงานยังไม่เปิดรับคำขอ');
+ return {people:requestPersonMatches((await db.ref(`${path}/people`).get()).val(),search)};
+});
 async function authorize(request){if(!request.auth)throw new HttpsError('unauthenticated','กรุณาเข้าสู่ระบบ');const {officeId,environment}=request.data||{};let path;try{path=officePath(officeId,environment);}catch(e){throw new HttpsError('invalid-argument',e.message);}const p=(await db.ref('admins/'+request.auth.uid).get()).val();if(!allowedOffice(p,officeId))throw new HttpsError('permission-denied','ไม่มีสิทธิ์เอกสารหน่วยงานนี้');return {path,officeId,environment,uid:request.auth.uid,email:request.auth.token.email||''};}
 function objectPath(context,doc){safeId(doc.folderId);safeId(doc.id);const year=Number(doc.year);if(!Number.isSafeInteger(year)||year<2500||year>2700)throw new HttpsError('failed-precondition','ปีแฟ้มไม่ถูกต้อง');return `documents/${context.environment}/${context.officeId}/${year}/${doc.folderId}/${doc.id}`;}
 export const documentHealth=onCall(opts,async request=>{await authorize(request);try{const [meta]=await bucket.getMetadata();return {ready:true,bucket:meta.name,maxBytes:MAX_BYTES};}catch{throw new HttpsError('failed-precondition','ยังไม่ได้เปิด Storage หรือบริการไม่มีสิทธิ์เข้าถึง กรุณาตรวจการตั้งค่า');}});
